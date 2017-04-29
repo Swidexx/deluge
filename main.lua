@@ -4,6 +4,7 @@ require 'easing'
 require 'pg'
 require 'menu'
 require 'world'
+require 'hud'
 require 'enemies'
 require 'player'
 
@@ -12,6 +13,7 @@ math.randomseed(love.timer.getTime())
 
 function love.load()
 	gamestate = 'menu'
+	hud.set()
 end
 
 gameScale = math.max(math.min(ssx/gsx, ssy/gsy), 1)
@@ -35,6 +37,7 @@ function love.update(dt)
 		world.update(dt)
 		enemies.update(dt)
 		player.update(dt)
+		hud.update(dt)
 	end
 	camera.x = math.floor(player.getX() - gsx/2 + 0.5) +
 				math.floor((mx-gsx/2)/3) + (mx-gsx/2 < 0 and 1 or 0)
@@ -72,6 +75,7 @@ function love.draw()
 		enemies.draw()
 		player.draw()
 		camera:unset()
+		hud.draw()
 	end
 	love.graphics.setCanvas()
 	love.graphics.setBackgroundColor(0, 0, 0)
