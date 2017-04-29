@@ -3,6 +3,7 @@ ssx = love.graphics.getWidth()
 ssy = love.graphics.getHeight()
 gsx = 480
 gsy = 270
+time = 0
 
 gfx = {
 	menu = {
@@ -69,29 +70,9 @@ love.graphics.line(1, 2, 5, 2)
 gfx.taser = love.graphics.newImage(taserCanv:newImageData())
 taserCanv = nil
 
-love.physics.setMeter(24)
-physWorld = love.physics.newWorld(0, 800, true)
-physWorld:setCallbacks(beginContact, endContact, preSolve, postSolve)
-objects = {
-	player = {
-		body = love.physics.newBody(physWorld, 100, 100, 'dynamic'),
-		shape = love.physics.newRectangleShape(16, 24)
-	},
-	floor = {
-		body = love.physics.newBody(physWorld, ssx/2, ssy+5, 'static'),
-		shape = love.physics.newRectangleShape(ssx, 10)
-	},
-	tiles = {}
-}
-objects.player.fixture = love.physics.newFixture(objects.player.body, objects.player.shape, 1)
-objects.floor.fixture = love.physics.newFixture(objects.floor.body, objects.floor.shape, 1)
-
-objects.player.body:setFixedRotation(true)
-
 function beginContact(a, b, coll)
 	local bullet = a:getBody():isBullet() and a or b:getBody():isBullet() and b or nil
 	if bullet then
-		bullet:getBody():destroy()
 		bullet:destroy()
 	end
 end
@@ -108,17 +89,29 @@ function postSolve(a, b, coll, normalImpulse, tangentImpulse)
 
 end
 
-function spawnBullet(x, y, a, s)
-	bullets[#bullets+1] = {}
-	local v = bullets[#bullets]
-	v.timer = 3
-	v.body = love.physics.newBody(world, x, y, 'dynamic')
-	v.shape = love.physics.newRectangleShape(4, 8)
-	v.fixture = love.physics.newFixture(v.body, v.shape, 50)
-	v.body:setBullet(true)
-	v.body:setAngle(a)
-	v.body:setLinearVelocity(math.cos(a - math.pi/2)*s, math.sin(a - math.pi/2)*s)
-end
+love.physics.setMeter(24)
+physWorld = love.physics.newWorld(0, 800, true)
+physWorld:setCallbacks(beginContact, endContact, preSolve, postSolve)
+objects = {
+	player = {
+		body = love.physics.newBody(physWorld, 100, 100, 'dynamic'),
+		shape = love.physics.newRectangleShape(16, 24)
+	},
+	floor = {
+		body = love.physics.newBody(physWorld, ssx/2, ssy+5, 'static'),
+		shape = love.physics.newRectangleShape(ssx, 10)
+	},
+	tiles = {},
+	enemies = {},
+	bullets = {}
+}
+objects.player.fixture = love.physics.newFixture(objects.player.body, objects.player.shape, 1)
+objects.floor.fixture = love.physics.newFixture(objects.floor.body, objects.floor.shape, 1)
+
+objects.player.fixture:setCategory(2)
+objects.player.fixture:setMask(2)
+
+objects.player.body:setFixedRotation(true)
 
 function addPhysTile(x, y, s)
 	local t = {
@@ -163,14 +156,14 @@ for x=0, tileMap.width-1 do
 			local enclosed = true
 			for ox=-1, 1 do
 				for oy=-1, 1 do
-					if math.abs(ox) + math.abs(oy) < 2 and x+ox > 0 and x+ox < tileMap.width and
+					-- bullets fall through if math.abs(ox) + math.abs(oy) < 2 required
+					if x+ox > 0 and x+ox < tileMap.width and
 					y+oy > 0 and y+oy < tileMap.height and not physTiles[x+ox..','..y+oy] then
 						enclosed = false
 					end
 				end
 			end
 			if not enclosed then
-				--love.graphics.rectangle('fill', x*tileMap.tilewidth+2, y*tileMap.tileheight+2, tileMap.tilewidth/2, tileMap.tileheight/2)
 				addPhysTile(x*tileMap.tilewidth, y*tileMap.tileheight, tileMap.tilewidth)
 			end
 		end
