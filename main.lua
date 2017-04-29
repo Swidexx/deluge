@@ -5,6 +5,7 @@ require 'pg'
 require 'menu'
 require 'world'
 require 'enemies'
+require 'hud'
 require 'player'
 
 love.filesystem.setIdentity(love.window.getTitle())
