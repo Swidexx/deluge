@@ -7,6 +7,7 @@ require 'world'
 require 'enemies'
 require 'hud'
 require 'player'
+require 'bullets'
 
 love.filesystem.setIdentity(love.window.getTitle())
 math.randomseed(love.timer.getTime())
@@ -32,8 +33,10 @@ function screen2game(x, y)
 end
 
 function love.update(dt)
+	time = time + dt
 	mx, my = screen2game(love.mouse.getPosition())
 	if gamestate == 'playing' then
+		bullets.update(dt)
 		world.update(dt)
 		enemies.update(dt)
 		player.update(dt)
@@ -74,6 +77,7 @@ function love.draw()
 		world.draw()
 		enemies.draw()
 		player.draw()
+		bullets.draw()
 		camera:unset()
 		hud.draw()
 	end
