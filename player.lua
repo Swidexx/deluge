@@ -19,9 +19,8 @@ end
 function player.shoot(x, y)
 	x, y = screen2game(x, y)
 	x, y = x-gsx/2, y-gsy/2
-	local a = math.atan2(x, y)
-	--todo: disable collision with player
-	--spawnBullet(player.getX(), player.getY(), a, 2e3)
+	local a = math.atan2(x, -y)-math.pi/2
+	spawnBullet(player.getX(), player.getY(), a, 1.2e3)
 end
 
 function player.draw()

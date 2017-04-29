@@ -1,7 +1,5 @@
 
-enemies = {
-	list = {}
-}
+enemies = {}
 
 function addEnemy(info)
 	local t = {
@@ -11,10 +9,10 @@ function addEnemy(info)
 		type = info.type or 'none',
 	}
 	t.body = love.physics.newBody(physWorld, t.x, t.y, 'dynamic')
-	t.shape = love.physics.newRectangleShape(14, 24)
+	t.shape = love.physics.newRectangleShape(16, 24)
 	t.fixture = love.physics.newFixture(t.body, t.shape, 1)
 	--t.body:setFixedRotation(true)
-	table.insert(enemies.list, t)
+	table.insert(objects.enemies, t)
 end
 
 addEnemy{x=150, y=100, name='Dummy', type='dummy'}
@@ -25,7 +23,7 @@ end
 
 function enemies.draw()
 	love.graphics.setColor(255, 255, 255)
-	for _, v in ipairs(enemies.list) do
-		love.graphics.draw(gfx.enemies.dummy, v.body:getX(), v.body:getY(), v.body:getAngle(), 1, 1, 7, 12)
+	for _, v in ipairs(objects.enemies) do
+		love.graphics.draw(gfx.enemies.dummy, v.body:getX(), v.body:getY(), v.body:getAngle(), 1, 1, 8, 12)
 	end
 end
