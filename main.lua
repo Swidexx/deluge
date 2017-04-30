@@ -43,6 +43,8 @@ function love.update(dt)
 				math.floor((mx-gsx/2)/3) + (mx-gsx/2 < 0 and 1 or 0)
 	camera.y = math.floor(player.getY() - gsy/2 + 0.5) +
 				math.floor((my-gsy/2)/3) + (my-gsy/2 < 0 and 1 or 0)
+	camera.x = math.min(math.max(camera.x, 0), gfx.map:getWidth() - gsx)
+	camera.y = math.min(math.max(camera.y, 0), gfx.map:getHeight() - gsx)
 end
 
 function love.mousepressed(x, y, btn, isTouch)
@@ -55,10 +57,9 @@ end
 
 function love.keypressed(k, scancode, isrepeat)
 	if gamestate == 'playing' then
+		player.keypressed(k, scancode, isrepeat)
 		if k == 'escape' then
 			gamestate = 'menu'
-		elseif k == 'space' then
-			objects.player.body:applyForce(0, -9e3)
 		end
 	elseif gamestate == 'menu' then
 		menu.keypressed(k)
