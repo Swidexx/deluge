@@ -34,7 +34,7 @@ end
 
 function player.keypressed(k, scancode, isrepeat)
 	if k == 'space' then
-		objects.player.body:applyForce(0, -9e3)
+		objects.player.body:applyForce(0, -12e3)
 	end
 end
 
