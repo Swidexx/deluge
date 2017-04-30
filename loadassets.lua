@@ -120,19 +120,14 @@ physWorld = love.physics.newWorld(0, 800, true)
 physWorld:setCallbacks(beginContact, endContact, preSolve, postSolve)
 objects = {
 	player = {
-		body = love.physics.newBody(physWorld, 260, 100, 'dynamic'),
+		body = love.physics.newBody(physWorld, 260, 800, 'dynamic'),
 		shape = love.physics.newRectangleShape(15, 26)
-	},
-	floor = {
-		body = love.physics.newBody(physWorld, ssx/2, ssy+5, 'static'),
-		shape = love.physics.newRectangleShape(ssx, 10)
 	},
 	tiles = {},
 	enemies = {},
 	bullets = {}
 }
 objects.player.fixture = love.physics.newFixture(objects.player.body, objects.player.shape, 1)
-objects.floor.fixture = love.physics.newFixture(objects.floor.body, objects.floor.shape, 1)
 
 objects.player.fixture:setCategory(2)
 objects.player.fixture:setMask(2)
@@ -148,10 +143,10 @@ function addPhysTile(x, y, s)
 	table.insert(objects.tiles, t)
 end
 
-tileMap = require 'map/DelugeConcept2'
+tileMap = require 'map/DelugeConcept2-newtiles'
 local mapCanv = love.graphics.newCanvas(tileMap.width*tileMap.tilewidth, tileMap.height*tileMap.tileheight)
 love.graphics.setCanvas(mapCanv)
-local tileImage = love.graphics.newImage('map/Plainstileset.png')
+local tileImage = love.graphics.newImage('map/tilesheet.png')
 gfx.tileImage = tileImage
 local quads = {}
 local tileset = tileMap.tilesets[1]
@@ -167,7 +162,7 @@ for _, layer in ipairs(tileMap.layers) do
 		for x=0, tileMap.width-1 do
 			local idx = y*tileMap.width + x + 1
 			if layer.data[idx] ~= 0 then
-				if layer.name == "Terrain" then
+				if layer.name == "main" then
 					physTiles[x..','..y] = true
 				end
 				love.graphics.draw(tileImage, quads[layer.data[idx]], x*tileMap.tilewidth, y*tileMap.tileheight)

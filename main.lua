@@ -47,7 +47,7 @@ function love.update(dt)
 	camera.y = math.floor(player.getY() - gsy/2 + 0.5) +
 				math.floor((my-gsy/2)/3) + (my-gsy/2 < 0 and 1 or 0)
 	camera.x = math.min(math.max(camera.x, 0), gfx.map:getWidth() - gsx)
-	camera.y = math.min(math.max(camera.y, 0), gfx.map:getHeight() - gsx)
+	camera.y = math.min(math.max(camera.y, 0), gfx.map:getHeight() - gsy)
 end
 
 function love.mousepressed(x, y, btn, isTouch)
@@ -74,6 +74,8 @@ function love.draw()
 	if gamestate == 'menu' then
 		menu.draw()
 	elseif gamestate == 'playing' then
+		love.graphics.setColor(170, 200, 255)
+		love.graphics.rectangle('fill', -1, -1, gsx+2, gsy+2)
 		camera:set()
 		world.draw()
 		enemies.draw()
