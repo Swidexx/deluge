@@ -97,9 +97,15 @@ gfx.taser = love.graphics.newImage(taserCanv:newImageData())
 taserCanv = nil
 
 function beginContact(a, b, coll)
-	local bullet = a:getBody():isBullet() and a or b:getBody():isBullet() and b or nil
-	if bullet then
-		bullet:destroy()
+	if type(a:getUserData()) == 'table' and type(b:getUserData()) == 'table' then
+		local bullet = a:getUserData().type == 'bullet' and a or b:getUserData().type == 'bullet' and b or nil
+		if bullet then
+			local enemy = a:getUserData().type == 'enemy' and a or b:getUserData().type == 'enemy' and b or nil
+			if enemy then
+				enemy:getUserData().table.lastHit = time
+			end
+			bullet:destroy()
+		end
 	end
 end
 
@@ -115,6 +121,9 @@ function postSolve(a, b, coll, normalImpulse, tangentImpulse)
 
 end
 
+tileMap = require 'map/DelugeConcept2-newtiles'
+worldSize = {x=tileMap.width*tileMap.tilewidth, y=tileMap.height*tileMap.tileheight}
+
 love.physics.setMeter(24)
 physWorld = love.physics.newWorld(0, 800, true)
 physWorld:setCallbacks(beginContact, endContact, preSolve, postSolve)
@@ -123,12 +132,35 @@ objects = {
 		body = love.physics.newBody(physWorld, 260, 800, 'dynamic'),
 		shape = love.physics.newRectangleShape(15, 26)
 	},
+	worldEdges = {
+		left = {
+			body = love.physics.newBody(physWorld, -5, worldSize.y/2, 'static'),
+			shape = love.physics.newRectangleShape(10, worldSize.y)
+		},
+		right = {
+			body = love.physics.newBody(physWorld, worldSize.x + 5, worldSize.y/2, 'static'),
+			shape = love.physics.newRectangleShape(10, worldSize.y)
+		},
+		up = {
+			body = love.physics.newBody(physWorld, worldSize.x/2, -5, 'static'),
+			shape = love.physics.newRectangleShape(worldSize.x, 10)
+		},
+		down = {
+			body = love.physics.newBody(physWorld, worldSize.x/2, worldSize.y + 5, 'static'),
+			shape = love.physics.newRectangleShape(worldSize.x, 10)
+		}
+	},
 	tiles = {},
 	enemies = {},
 	bullets = {}
 }
-objects.player.fixture = love.physics.newFixture(objects.player.body, objects.player.shape, 1)
 
+objects.player.fixture = love.physics.newFixture(objects.player.body, objects.player.shape, 1)
+for _, v in pairs(objects.worldEdges) do
+	v.fixture = love.physics.newFixture(v.body, v.shape, 1)
+end
+
+objects.player.fixture:setUserData{type='player'}
 objects.player.fixture:setCategory(2)
 objects.player.fixture:setMask(2)
 
@@ -140,11 +172,11 @@ function addPhysTile(x, y, s)
 		shape = love.physics.newCircleShape(s/2-0.4)
 	}
 	t.fixture = love.physics.newFixture(t.body, t.shape, 1)
+	t.fixture:setUserData{type='tile'}
 	table.insert(objects.tiles, t)
 end
 
-tileMap = require 'map/DelugeConcept2-newtiles'
-local mapCanv = love.graphics.newCanvas(tileMap.width*tileMap.tilewidth, tileMap.height*tileMap.tileheight)
+local mapCanv = love.graphics.newCanvas(worldSize.x, worldSize.y)
 love.graphics.setCanvas(mapCanv)
 local tileImage = love.graphics.newImage('map/tilesheet.png')
 gfx.tileImage = tileImage
@@ -170,7 +202,7 @@ for _, layer in ipairs(tileMap.layers) do
 		end
 	end
 end
-love.graphics.setColor(0, 0, 255, 200)
+-- todo: connect continuous tiles
 for x=0, tileMap.width-1 do
 	for y=0, tileMap.height-1 do
 		if physTiles[x..','..y] then

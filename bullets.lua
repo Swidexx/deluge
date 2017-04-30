@@ -33,7 +33,8 @@ function spawnBullet(x, y, a, s)
 		body = love.physics.newBody(physWorld, x, y, 'dynamic'),
 		shape = love.physics.newCircleShape(1)
 	}
-	t.fixture = love.physics.newFixture(t.body, t.shape, 5)
+	t.fixture = love.physics.newFixture(t.body, t.shape, 20)
+	t.fixture:setUserData{type='bullet'}
 	t.fixture:setCategory(2)
 	t.fixture:setMask(2)
 	t.body:setBullet(true)
