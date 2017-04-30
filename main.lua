@@ -1,4 +1,5 @@
 require 'loadassets'
+require 'collision'
 require 'camera'
 require 'easing'
 require 'pg'

@@ -23,6 +23,9 @@ addEnemy{x=145, y=800, name='Dummy', type='dummy'}
 function enemies.update(dt)
 	for _, v in pairs(objects.enemies) do
 		v.body:applyTorque(-v.body:getAngle()*5e4)
+		local xv, yv = v.body:getLinearVelocity()
+		v.body:setLinearVelocity(math.min(math.max(xv, -80), 80), yv)
+		v.body:applyForce(-2*xv, 0)
 	end
 end
 

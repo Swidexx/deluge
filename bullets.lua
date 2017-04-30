@@ -49,13 +49,13 @@ function bullets.draw()
 	for _, v in pairs(bullets.paths) do
 		for i2, v2 in pairs(v) do
 			if i2 ~= #v then
-				love.graphics.setColor(240, 240, 40, math.max(v2.time + 0.5 - time, 0)*2*255)
+				love.graphics.setColor(240, 240, 240, math.max(v2.time + 1/16 - time, 0)*16*255)
 				love.graphics.line(v2.x, v2.y, v[i2+1].x, v[i2+1].y)
 			end
 		end
 	end
-	love.graphics.setColor(0, 0, 0)
+	love.graphics.setColor(128, 128, 128)
 	for _, v in pairs(objects.bullets) do
-		love.graphics.circle('fill', v.body:getX(), v.body:getY(), 1)
+		love.graphics.circle('fill', v.body:getX(), v.body:getY(), 0.5)
 	end
 end
