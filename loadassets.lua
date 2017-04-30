@@ -24,6 +24,12 @@ gfx = {
 	},
 	player = {
 		walkSheet = love.graphics.newImage('gfx/player/walk.png')
+	hud = {
+		health1 = love.graphics.newImage('gfx/hud/health/skin1/1.png'),
+		health2 = love.graphics.newImage('gfx/hud/health/skin1/2.png'),
+		health3 = love.graphics.newImage('gfx/hud/health/skin1/3.png'),
+		health4 = love.graphics.newImage('gfx/hud/health/skin1/4.png'),
+		health5 = love.graphics.newImage('gfx/hud/health/skin1/5.png')
 	}
 }
 
