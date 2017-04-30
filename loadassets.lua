@@ -22,6 +22,8 @@ gfx = {
 	enemies = {
 		dummy = love.graphics.newImage('gfx/dummy2.png')
 	},
+	player = {
+		walkSheet = love.graphics.newImage('gfx/player/walk.png')
 	hud = {
 		health1 = love.graphics.newImage('gfx/hud/health/skin1/1.png'),
 		health2 = love.graphics.newImage('gfx/hud/health/skin1/2.png'),
@@ -32,19 +34,35 @@ gfx = {
 }
 
 function recSetFilter(e)
-    if type(e) == "table" then
-        for _, v in pairs(e) do
-            recSetFilter(v)
-        end
-    else
-        e:setFilter('nearest', 'nearest')
-    end
+	if type(e) == "table" then
+		for _, v in pairs(e) do
+			recSetFilter(v)
+		end
+	else
+		e:setFilter('nearest', 'nearest')
+	end
 end
 recSetFilter(gfx)
 love.graphics.setDefaultFilter('nearest', 'nearest')
 love.graphics.setLineStyle('rough')
 
 --love.mouse.setCursor(love.mouse.newCursor(love.image.newImageData('gfx/cursors/defpix2.png'), 0, 0))
+
+anim = {
+	player = {
+		walk = {
+			sheet = gfx.player.walkSheet,
+			quads = {},
+			ids = {3,4,5,6,7,8,9,10,11,12,13,14,15}
+		}
+	}
+}
+
+for i=1, 15 do
+	local x = (i-1)%4*16
+	local y = math.floor((i-1)/4)*27
+	table.insert(anim.player.walk.quads, love.graphics.newQuad(x, y, 15, 26, 64, 108))
+end
 
 shaders = {
 	menubg = love.graphics.newShader('shaders/menubg.glsl'),
@@ -101,8 +119,8 @@ physWorld = love.physics.newWorld(0, 800, true)
 physWorld:setCallbacks(beginContact, endContact, preSolve, postSolve)
 objects = {
 	player = {
-		body = love.physics.newBody(physWorld, 100, 100, 'dynamic'),
-		shape = love.physics.newRectangleShape(16, 24)
+		body = love.physics.newBody(physWorld, 260, 100, 'dynamic'),
+		shape = love.physics.newRectangleShape(15, 26)
 	},
 	floor = {
 		body = love.physics.newBody(physWorld, ssx/2, ssy+5, 'static'),
