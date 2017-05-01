@@ -59,16 +59,17 @@ objects = {
 }
 
 objects.player.fixture = love.physics.newFixture(objects.player.body, objects.player.shape, 1)
+objects.player.fixture:setFriction(0)
+objects.player.fixture:setUserData{type='player'}
+objects.player.fixture:setCategory(2)
+objects.player.fixture:setMask(2)
+objects.player.body:setFixedRotation(true)
+
 for _, v in pairs(objects.worldEdges) do
 	v.fixture = love.physics.newFixture(v.body, v.shape, 1)
 	v.fixture:setUserData{type='wall'}
 end
 
-objects.player.fixture:setUserData{type='player'}
-objects.player.fixture:setCategory(2)
-objects.player.fixture:setMask(2)
-
-objects.player.body:setFixedRotation(true)
 
 function addPhysTile(x, y, w, h)
 	local t = {
