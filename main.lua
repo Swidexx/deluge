@@ -86,8 +86,9 @@ function love.draw()
 		bullets.draw()
 		camera:unset()
 		hud.draw()
-		love.graphics.setColor(255, 255, 255)
-		love.graphics.draw(gfx.rogue2, mx-gfx.rogue2:getWidth()/2, my-80)
+
+		--love.graphics.setColor(255, 255, 255)
+		--love.graphics.draw(gfx.rogue2, mx-gfx.rogue2:getWidth()/2, my-80)
 	end
 	love.graphics.setCanvas()
 	love.graphics.setBackgroundColor(0, 0, 0)

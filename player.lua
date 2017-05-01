@@ -7,10 +7,27 @@ player = {
 		direction = 1,
 		stopped = true
 	},
-	direction = 1
+	direction = 1,
+	inAir = true
 }
 
 function player.update(dt)
+	local xv, yv = objects.player.body:getLinearVelocity()
+	local jumpContacts = objects.playerSensorDown.body:getContactList()
+	player.inAir = true
+	for _, v in pairs(jumpContacts) do
+		if v:isTouching() then
+			local fixA, fixB = v:getFixtures()
+			local ud = fixB:getUserData()
+			if type(ud) == 'table' then
+				if not (ud.type == 'bullet' or ud.type == 'player') then
+					player.inAir = false
+				end
+			else
+				player.inAir = false
+			end
+		end
+	end
 	if love.keyboard.isDown('d') then
 		objects.player.body:applyForce(1e3, 0)
 		player.anim.stopped = false
@@ -25,9 +42,12 @@ function player.update(dt)
 		player.anim.direction = player.anim.state < #anim.player.walk.ids/2 and 1 or -1
 	end
 
-	local xv, yv = objects.player.body:getLinearVelocity()
 	objects.player.body:setLinearVelocity(math.min(math.max(xv, -100), 100), yv)
 	objects.player.body:applyForce(-8*xv, 0)
+
+	if love.keyboard.isDown('space') and not player.inAir then
+		objects.player.body:setLinearVelocity(xv, -2.5e2)
+	end
 
 	if not player.anim.stopped then
 		player.anim.state = (player.anim.state + math.max(math.abs(xv), 20)*0.5*player.anim.direction*dt - 1)%(#anim.player.walk.ids-1) + 1
@@ -50,9 +70,11 @@ end
 
 function player.keypressed(k, scancode, isrepeat)
 	local xv, yv = objects.player.body:getLinearVelocity()
-	if k == 'space' then
+	--[[
+	if k == 'space' and not player.inAir then
 		objects.player.body:setLinearVelocity(xv, -2.5e2)
 	end
+	]]
 end
 
 function player.draw()
