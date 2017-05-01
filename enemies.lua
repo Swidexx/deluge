@@ -25,7 +25,7 @@ function enemies.update(dt)
 		v.body:applyTorque(-v.body:getAngle()*5e4)
 		local xv, yv = v.body:getLinearVelocity()
 		v.body:setLinearVelocity(math.min(math.max(xv, -80), 80), yv)
-		v.body:applyForce(-2*xv, 0)
+		v.body:applyForce(-8*xv, 0)
 	end
 end
 

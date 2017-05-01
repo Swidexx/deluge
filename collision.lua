@@ -35,6 +35,10 @@ objects = {
 		body = love.physics.newBody(physWorld, 260, 800, 'dynamic'),
 		shape = love.physics.newRectangleShape(15, 26)
 	},
+	playerSensorDown = {
+		body = love.physics.newBody(physWorld, 260, 814, 'dynamic'),
+		shape = love.physics.newRectangleShape(13, 1)
+	},
 	worldEdges = {
 		left = {
 			body = love.physics.newBody(physWorld, -5, worldSize.y/2, 'static'),
@@ -59,16 +63,22 @@ objects = {
 }
 
 objects.player.fixture = love.physics.newFixture(objects.player.body, objects.player.shape, 1)
+objects.player.fixture:setUserData{type='player'}
+objects.player.fixture:setFriction(0)
+objects.player.fixture:setCategory(2)
+objects.player.fixture:setMask(2)
+objects.player.body:setFixedRotation(true)
+
+objects.playerSensorDown.fixture = love.physics.newFixture(objects.playerSensorDown.body, objects.playerSensorDown.shape, 1)
+objects.playerSensorDown.fixture:setUserData{type='playerSensorDown'}
+objects.playerSensorDown.fixture:setSensor(true)
+
+objects.player.sensorDownJoint = love.physics.newWeldJoint(objects.player.body, objects.playerSensorDown.body, 260, 800)
+
 for _, v in pairs(objects.worldEdges) do
 	v.fixture = love.physics.newFixture(v.body, v.shape, 1)
 	v.fixture:setUserData{type='wall'}
 end
-
-objects.player.fixture:setUserData{type='player'}
-objects.player.fixture:setCategory(2)
-objects.player.fixture:setMask(2)
-
-objects.player.body:setFixedRotation(true)
 
 function addPhysTile(x, y, w, h)
 	local t = {
@@ -196,7 +206,6 @@ end
 for _, v in pairs(physVertTables) do
 	local start = v[1].y
 	local fin = v[#v].y
-	print('add tile: ')
 	addPhysTile(v[1].x*tileMap.tilewidth + tileMap.tilewidth/2, (start + fin)/2*tileMap.tileheight,
 				tileMap.tilewidth, (fin - start)*tileMap.tileheight)
 end
