@@ -13,21 +13,7 @@ player = {
 
 function player.update(dt)
 	local xv, yv = objects.player.body:getLinearVelocity()
-	local jumpContacts = objects.playerSensorDown.body:getContactList()
-	player.inAir = true
-	for _, v in pairs(jumpContacts) do
-		if v:isTouching() then
-			local fixA, fixB = v:getFixtures()
-			local ud = fixB:getUserData()
-			if type(ud) == 'table' then
-				if not (ud.type == 'bullet' or ud.type == 'player') then
-					player.inAir = false
-				end
-			else
-				player.inAir = false
-			end
-		end
-	end
+	
 	if love.keyboard.isDown('d') then
 		objects.player.body:applyForce(1e3, 0)
 		player.anim.stopped = false
@@ -45,8 +31,28 @@ function player.update(dt)
 	objects.player.body:setLinearVelocity(math.min(math.max(xv, -100), 100), yv)
 	objects.player.body:applyForce(-8*xv, 0)
 
+	local jumpContacts = objects.playerSensorDown.body:getContactList()
+	player.inAir = true
+	for _, v in pairs(jumpContacts) do
+		if v:isTouching() then
+			local fixA, fixB = v:getFixtures()
+			local ud = fixB:getUserData()
+			if type(ud) == 'table' then
+				if not (ud.type == 'bullet' or ud.type == 'player') then
+					player.inAir = false
+				end
+				if ud.type == 'enemy' then
+					player.jump()
+					ud.table.lastHit = time
+				end
+			else
+				player.inAir = false
+			end
+		end
+	end
+
 	if love.keyboard.isDown('space') and not player.inAir then
-		objects.player.body:setLinearVelocity(xv, -2.5e2)
+		player.jump()
 	end
 
 	if not player.anim.stopped then
@@ -58,6 +64,12 @@ function player.update(dt)
 	if math.abs(xv) > 10 then
 		player.direction = xv < 0 and -1 or 1
 	end
+end
+
+function player.jump()
+	local xv, yv = objects.player.body:getLinearVelocity()
+	objects.player.body:setLinearVelocity(xv, -2.5e2)
+	print('jump\n-'..time)
 end
 
 function player.shoot(x, y)
