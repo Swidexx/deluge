@@ -53,16 +53,15 @@ anim = {
 	player = {
 		walk = {
 			sheet = gfx.player.walkSheet,
-			quads = {},
-			ids = {3,4,5,6,7,8,9,10,11,12,13,14,15}
+			quads = {}
 		}
 	}
 }
-
-for i=1, 15 do
-	local x = (i-1)%4*16
-	local y = math.floor((i-1)/4)*27
-	table.insert(anim.player.walk.quads, love.graphics.newQuad(x, y, 15, 26, 64, 108))
+for i=1, 9 do
+	local x = (i-1)*20
+	local y = 0
+	table.insert(anim.player.walk.quads, love.graphics.newQuad(x, y, 19, 33,
+					gfx.player.walkSheet:getWidth(), gfx.player.walkSheet:getHeight()))
 end
 
 shaders = {

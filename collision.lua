@@ -33,11 +33,11 @@ physWorld:setCallbacks(beginContact, endContact, preSolve, postSolve)
 objects = {
 	player = {
 		body = love.physics.newBody(physWorld, 260, 800, 'dynamic'),
-		shape = love.physics.newRectangleShape(15, 26)
+		shape = love.physics.newRectangleShape(19, 33)
 	},
 	playerSensorDown = {
-		body = love.physics.newBody(physWorld, 260, 814, 'dynamic'),
-		shape = love.physics.newRectangleShape(13, 1)
+		body = love.physics.newBody(physWorld, 260, 817, 'dynamic'),
+		shape = love.physics.newRectangleShape(15, 1)
 	},
 	worldEdges = {
 		left = {

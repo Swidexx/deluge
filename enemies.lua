@@ -35,7 +35,7 @@ function enemies.draw()
 		love.graphics.draw(gfx.enemies.dummy, v.body:getX(), v.body:getY(), v.body:getAngle(), 1, 1, 8, 12)
 		love.graphics.setColor(0, 0, 0, math.max(-((time - v.lastHit)*2 - 1)^2 + 1, 0)*255)
 		love.graphics.setFont(fonts.f18)
-		love.graphics.print('!', v.body:getX() - fonts.f18:getWidth('!')/2,
-							v.body:getY() - 12 - fonts.f18:getHeight('!') - math.max(-((time - v.lastHit)*2 - 1)^2 + 1, 0)*8)
+		love.graphics.print('!', math.floor(v.body:getX() - fonts.f18:getWidth('!')/2),
+							math.floor(v.body:getY() - 12 - fonts.f18:getHeight('!') - math.max(-((time - v.lastHit)*2 - 1)^2 + 1, 0)*8))
 	end
 end
