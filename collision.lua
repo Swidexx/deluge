@@ -5,7 +5,7 @@ function beginContact(a, b, coll)
 		if bullet then
 			local enemy = a:getUserData().type == 'enemy' and a or b:getUserData().type == 'enemy' and b or nil
 			if enemy then
-				enemy:getUserData().table.lastHit = time
+				enemies.damage(enemy:getUserData().table, 1)
 			end
 			bullet:destroy()
 		end

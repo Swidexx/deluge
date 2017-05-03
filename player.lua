@@ -9,7 +9,8 @@ player = {
 	},
 	direction = 1,
 	inAir = true,
-	walking = false
+	walking = false,
+	lastEnemyJump = 0
 }
 
 function player.update(dt)
@@ -48,8 +49,11 @@ function player.update(dt)
 					player.inAir = false
 				end
 				if ud.type == 'enemy' then
-					player.jump()
-					ud.table.lastHit = time
+					if time - player.lastEnemyJump > 0.1 then
+						player.lastEnemyJump = time
+						player.jump()
+						enemies.damage(ud.table, 4)
+					end
 				end
 			else
 				player.inAir = false
