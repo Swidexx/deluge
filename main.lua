@@ -55,7 +55,7 @@ function love.mousepressed(x, y, btn, isTouch)
 	if gamestate == 'menu' then
 		menu.mousepressed(x, y, btn)
 	elseif gamestate == 'playing' then
-		player.shoot(x, y)
+		player.mousepressed(x, y, btn)
 	end
 end
 
