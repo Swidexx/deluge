@@ -25,7 +25,9 @@ function drawColliders(e)
 		end
     else
 		for _, v in pairs(e) do
-			drawColliders(v)
+			if type(v) == 'table' then
+				drawColliders(v)
+			end
 		end
     end
 end
@@ -33,5 +35,5 @@ end
 function world.draw()
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.draw(gfx.map, 0, 0)
-	--drawColliders()
+	drawColliders()
 end

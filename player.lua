@@ -10,7 +10,7 @@ player = {
 	direction = 1,
 	inAir = true,
 	walking = false,
-	lastEnemyJump = 0,
+	lastAttackJump = 0,
 	grapple = {
 		found = false,
 		dist = 0,
@@ -23,7 +23,6 @@ player = {
 function player.update(dt)
 	local xv, yv = objects.player.body:getLinearVelocity()
 
-	--objects.player.body:setLinearVelocity(math.min(math.max(xv, -100), 100), yv)
 	if not player.inAir then
 		objects.player.body:applyForce(-8*xv, 0)
 	end
@@ -58,8 +57,8 @@ function player.update(dt)
 					player.inAir = false
 				end
 				if ud.type == 'enemy' then
-					if time - player.lastEnemyJump > 0.1 then
-						player.lastEnemyJump = time
+					if time - player.lastAttackJump > 0.2 then
+						player.lastAttackJump = time
 						player.jump()
 						enemies.damage(ud.table, 4)
 					end
@@ -91,8 +90,17 @@ function player.update(dt)
 end
 
 function player.jump()
+	if objects.player.grappleJoint then
+		objects.player.grappleJoint:destroy()
+		objects.player.grappleJoint = nil
+		player.grapple.found = false
+	end
 	local xv, yv = objects.player.body:getLinearVelocity()
 	objects.player.body:setLinearVelocity(xv, -2.5e2)
+end
+
+function player.damage(d)
+	health = health - d
 end
 
 function player.mousepressed(x, y, btn)
@@ -106,10 +114,10 @@ function player.mousepressed(x, y, btn)
 		player.grapple.found = false
 		player.grapple.ray.x1 = player.getX()
 		player.grapple.ray.y1 = player.getY()
-		player.grapple.ray.x2 = player.getX() + math.cos(a)*100
-		player.grapple.ray.y2 = player.getY() + math.sin(a)*100
-		physWorld:rayCast(player.getX(), player.getY(), player.getX() + math.cos(a)*100,
-							player.getY() + math.sin(a)*100, grappleCallback)
+		player.grapple.ray.x2 = player.getX() + math.cos(a)*150
+		player.grapple.ray.y2 = player.getY() + math.sin(a)*150
+		physWorld:rayCast(player.getX(), player.getY(), player.getX() + math.cos(a)*150,
+							player.getY() + math.sin(a)*150, grappleCallback)
 		if player.grapple.found then
 			if objects.player.grappleJoint then
 				objects.player.grappleJoint:destroy()
@@ -141,8 +149,6 @@ function player.keypressed(k, scancode, isrepeat)
 	if k == 'space' then
 		if player.inAir then
 			if objects.player.grappleJoint then
-				objects.player.grappleJoint:destroy()
-				objects.player.grappleJoint = nil
 				player.jump()
 			end
 		else
@@ -157,9 +163,11 @@ function player.draw()
 	local _, _, w, h = quad:getViewport()
 	love.graphics.draw(gfx.player.walkSheet, quad, player.getX(), player.getY(),
 						0, player.direction, 1, math.floor(w/2), math.floor(h/2))
-	love.graphics.setLineWidth(1)
-	love.graphics.setColor(255, 0, 0)
-	love.graphics.line(player.grapple.ray.x1, player.grapple.ray.y1, player.grapple.ray.x2, player.grapple.ray.y2)
-	love.graphics.setColor(0, 0, 0)
-	love.graphics.circle('line', player.grapple.x, player.grapple.y, 3)
+	if player.grapple.found then
+		love.graphics.setLineWidth(1)
+		love.graphics.setColor(255, 0, 0)
+		love.graphics.line(player.grapple.ray.x1, player.grapple.ray.y1, player.grapple.ray.x2, player.grapple.ray.y2)
+		love.graphics.setColor(0, 0, 0)
+		love.graphics.circle('line', player.grapple.x, player.grapple.y, 3)
+	end
 end
