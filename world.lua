@@ -35,5 +35,5 @@ end
 function world.draw()
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.draw(gfx.map, 0, 0)
-	drawColliders()
+	--drawColliders()
 end
