@@ -11,6 +11,7 @@ function addEnemy(info)
 		hp = info.hp or 10,
 		hpMax = info.hpMax or 10,
 		inAir = true,
+		lastJump = -10,
 		lastAttackJump = -10
 	}
 	t.main = {
@@ -30,7 +31,7 @@ function addEnemy(info)
 	table.insert(objects.enemies, t)
 end
 
-addEnemy{x=145, y=800, name='Dummy', type='dummy'}
+addEnemy{x=1345, y=1000, name='Dummy', type='dummy'}
 
 function enemies.update(dt)
 	for _, v in pairs(objects.enemies) do
@@ -53,7 +54,7 @@ function enemies.update(dt)
 					if ud.type == 'player' then
 						if time - v.lastAttackJump > 0.2 then
 							v.lastAttackJump = time
-							v.main.body:setLinearVelocity(xv, -2.5e2)
+							v.main.body:setLinearVelocity(xv, -2.7e2)
 							player.damage(1)
 						end
 					end
@@ -64,8 +65,9 @@ function enemies.update(dt)
 			end
 		end
 
-		if not v.inAir then
-			v.main.body:setLinearVelocity(xv, -2.5e2)
+		if not v.inAir and time - v.lastJump > 1.5 then
+			v.lastJump = time
+			v.main.body:setLinearVelocity(xv, -2.7e2)
 		end
 	end
 end
