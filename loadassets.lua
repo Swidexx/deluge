@@ -23,7 +23,8 @@ gfx = {
 		dummy = love.graphics.newImage('gfx/dummy2.png')
 	},
 	player = {
-		walkSheet = love.graphics.newImage('gfx/player/walk.png')
+		walkSheet = love.graphics.newImage('gfx/player/walk.png'),
+		jump = love.graphics.newImage('gfx/player/jump.png')
 	},
 	hud = {
 		health1 = love.graphics.newImage('gfx/hud/health/skin1/1.png'),
@@ -57,7 +58,7 @@ anim = {
 		}
 	}
 }
-for i=1, 9 do
+for i=1, 16 do
 	local x = (i-1)*20
 	local y = 0
 	table.insert(anim.player.walk.quads, love.graphics.newQuad(x, y, 19, 33,

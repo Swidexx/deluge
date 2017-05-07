@@ -76,16 +76,16 @@ function player.update(dt)
 	else
 		player.anim.frameTime = player.anim.frameTime + 10*dt
 		if player.anim.nextFrame ~= 1 then
-			player.anim.nextFrame = player.anim.frame + (player.anim.frame > 6 and 1 or -1)
+			player.anim.nextFrame = player.anim.frame + (player.anim.frame > 7 and 1 or -1)
 		end
 	end
-	if player.anim.nextFrame > 9 then
+	if player.anim.nextFrame > 16 then
 		player.anim.nextFrame = 3
 	elseif player.anim.nextFrame < 1 then
 		player.anim.nextFrame = 1
 	end
 	if player.anim.frameTime > 1 then
-		player.anim.frameTime = player.anim.frameTime - 1
+		player.anim.frameTime = math.min(player.anim.frameTime - 1, 1)
 		player.anim.frame = player.anim.nextFrame
 	end
 end
@@ -153,10 +153,15 @@ end
 
 function player.draw()
 	love.graphics.setColor(255, 255, 255)
-	local quad = anim.player.walk.quads[player.anim.frame]
-	local _, _, w, h = quad:getViewport()
-	love.graphics.draw(gfx.player.walkSheet, quad, player.getX(), player.getY(),
-						0, player.direction, 1, math.floor(w/2), math.floor(h/2))
+	if not player.inAir then
+		local quad = anim.player.walk.quads[player.anim.frame]
+		local _, _, w, h = quad:getViewport()
+		love.graphics.draw(gfx.player.walkSheet, quad, player.getX(), player.getY(),
+							0, player.direction, 1, math.floor(w/2), math.floor(h/2))
+	else
+		love.graphics.draw(gfx.player.jump, player.getX(), player.getY(), 0,
+							player.direction, 1, gfx.player.jump:getWidth()/2, gfx.player.jump:getHeight()/2)
+	end
 	love.graphics.setLineWidth(1)
 	love.graphics.setColor(255, 0, 0)
 	love.graphics.line(player.grapple.ray.x1, player.grapple.ray.y1, player.grapple.ray.x2, player.grapple.ray.y2)
