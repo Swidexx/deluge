@@ -30,7 +30,14 @@ gfx = {
 		health2 = love.graphics.newImage('gfx/hud/health/skin1/2.png'),
 		health3 = love.graphics.newImage('gfx/hud/health/skin1/3.png'),
 		health4 = love.graphics.newImage('gfx/hud/health/skin1/4.png'),
-		health5 = love.graphics.newImage('gfx/hud/health/skin1/5.png')
+		health5 = love.graphics.newImage('gfx/hud/health/skin1/5.png'),
+		inventory = love.graphics.newImage('gfx/hud/inV1.png')
+	},
+	items = {
+		radiantStaff = love.graphics.newImage('gfx/items/radiantStaff.png')
+	},
+	objects = {
+		stoneChest = love.graphics.newImage('gfx/objects/stoneChest.png')
 	}
 }
 

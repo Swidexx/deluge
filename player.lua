@@ -45,7 +45,7 @@ function player.update(dt)
 	if math.abs(xv) > 10 then
 		player.direction = xv < 0 and -1 or 1
 	end
-
+	
 	local jumpContacts = objects.playerSensorDown.body:getContactList()
 	player.inAir = true
 	for _, v in pairs(jumpContacts) do
