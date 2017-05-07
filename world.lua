@@ -25,9 +25,7 @@ function drawColliders(e)
 		end
     else
 		for _, v in pairs(e) do
-			if type(v) == 'table' then
-				drawColliders(v)
-			end
+			drawColliders(v)
 		end
     end
 end
