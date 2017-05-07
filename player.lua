@@ -45,9 +45,7 @@ function player.update(dt)
 	if math.abs(xv) > 10 then
 		player.direction = xv < 0 and -1 or 1
 	end
-
-	player.inAir = false
-	--[[
+	
 	local jumpContacts = objects.playerSensorDown.body:getContactList()
 	player.inAir = true
 	for _, v in pairs(jumpContacts) do
@@ -70,7 +68,6 @@ function player.update(dt)
 			end
 		end
 	end
-	]]
 
 	if player.walking then
 		player.anim.frameTime = player.anim.frameTime + math.max(math.abs(xv), 20)*0.5*dt

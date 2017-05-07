@@ -40,8 +40,6 @@ function enemies.update(dt)
 		v.main.body:setLinearVelocity(math.min(math.max(xv, -80), 80), yv)
 		v.main.body:applyForce(-8*xv, 0)
 
-		v.inAir = false
-		--[[
 		local jumpContacts = v.sensorDown.body:getContactList()
 		v.inAir = true
 		for _, v2 in pairs(jumpContacts) do
@@ -60,13 +58,12 @@ function enemies.update(dt)
 							player.damage(1)
 						end
 					end
-					print(ud.type)
+					--print(ud.type)
 				else
 					v.inAir = false
 				end
 			end
 		end
-		]]
 
 		if not v.inAir and time - v.lastJump > 1.5 then
 			v.lastJump = time
