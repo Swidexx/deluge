@@ -26,6 +26,7 @@ function hud.update(dt)
 end
 
 function hud.draw()
-  love.graphics.setColor(255, 255, 255)
-	love.graphics.draw(face)
+	love.graphics.setColor(255, 255, 255)
+	love.graphics.draw(gfx.hud.inventory, 0, 0)
+	love.graphics.draw(face, -3, 4)
 end
