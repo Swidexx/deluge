@@ -19,7 +19,7 @@ function addEnemy(info)
 	table.insert(objects.enemies, t)
 end
 
-addEnemy{x=1345, y=1000, name='Dummy', type='dummy'}
+addEnemy{x=145, y=800, name='Dummy', type='dummy'}
 
 function enemies.update(dt)
 	for _, v in pairs(objects.enemies) do
