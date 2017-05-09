@@ -24,7 +24,7 @@ gfx = {
 	},
 	player = {
 		walkSheet = love.graphics.newImage('gfx/player/walk.png'),
-		jump = love.graphics.newImage('gfx/player/jump.png')
+		jumpSheet = love.graphics.newImage('gfx/player/jump.png')
 	},
 	hud = {
 		health1 = love.graphics.newImage('gfx/hud/health/skin1/1.png'),
@@ -55,6 +55,10 @@ anim = {
 		walk = {
 			sheet = gfx.player.walkSheet,
 			quads = {}
+		},
+		jump = {
+			sheet = gfx.player.jumpSheet,
+			quads = {}
 		}
 	}
 }
@@ -63,6 +67,12 @@ for i=1, 16 do
 	local y = 0
 	table.insert(anim.player.walk.quads, love.graphics.newQuad(x, y, 19, 33,
 					gfx.player.walkSheet:getWidth(), gfx.player.walkSheet:getHeight()))
+end
+for i=1, 8 do
+	local x = (i-1)*20
+	local y = 0
+	table.insert(anim.player.jump.quads, love.graphics.newQuad(x, y, 19, 34,
+					gfx.player.jumpSheet:getWidth(), gfx.player.jumpSheet:getHeight()))
 end
 
 shaders = {

@@ -35,7 +35,7 @@ end
 
 function love.update(dt)
 	time = time + dt
-	mx, my = screen2game(love.mouse.getPosition())
+	local mx, my = screen2game(love.mouse.getPosition())
 	if gamestate == 'playing' then
 		bullets.update(dt)
 		world.update(dt)

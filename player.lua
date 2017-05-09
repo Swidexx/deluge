@@ -3,7 +3,8 @@ player = {
 	getX = function() return objects.player.body:getX() end,
 	getY = function() return objects.player.body:getY() end,
 	anim = {
-		frame = 1,
+		state = 'jump',
+		frame = 8,
 		nextFrame = 1,
 		frameTime = 0
 	},
@@ -70,20 +71,36 @@ function player.update(dt)
 		end
 	end
 
-	if player.walking then
-		player.anim.frameTime = player.anim.frameTime + math.max(math.abs(xv), 20)*0.5*dt
-		player.anim.nextFrame = player.anim.frame + 1
-	else
-		player.anim.frameTime = player.anim.frameTime + 10*dt
-		if player.anim.nextFrame ~= 1 then
-			player.anim.nextFrame = player.anim.frame + (player.anim.frame > 7 and 1 or -1)
+	if player.anim.state == 'walk' then
+		if player.walking then
+			--player.anim.frameTime = player.anim.frameTime + math.max(math.abs(xv), 20)*0.5*dt
+			player.anim.frameTime = player.anim.frameTime + 20*dt
+			player.anim.nextFrame = player.anim.frame + 1
+		else
+			player.anim.frameTime = player.anim.frameTime + 10*dt
+			if player.anim.nextFrame ~= 1 then
+				player.anim.nextFrame = player.anim.frame + (player.anim.frame > 7 and 1 or -1)
+			end
+		end
+		if player.anim.nextFrame > 16 then
+			player.anim.nextFrame = 3
+		elseif player.anim.nextFrame < 1 then
+			player.anim.nextFrame = 1
+		end
+	elseif player.anim.state == 'jump' then
+		if player.inAir then
+			player.anim.frameTime = player.anim.frameTime + 20*dt
+			player.anim.nextFrame = math.min(player.anim.frame + 1, 8)
+		else
+			player.anim.frameTime = player.anim.frameTime + 40*dt
+			player.anim.nextFrame = player.anim.frame - 1
+			if player.anim.nextFrame < 4 then
+				player.anim.frame = 3
+				player.anim.state = 'walk'
+			end
 		end
 	end
-	if player.anim.nextFrame > 16 then
-		player.anim.nextFrame = 3
-	elseif player.anim.nextFrame < 1 then
-		player.anim.nextFrame = 1
-	end
+
 	if player.anim.frameTime > 1 then
 		player.anim.frameTime = math.min(player.anim.frameTime - 1, 1)
 		player.anim.frame = player.anim.nextFrame
@@ -93,6 +110,8 @@ end
 function player.jump()
 	local xv, yv = objects.player.body:getLinearVelocity()
 	objects.player.body:setLinearVelocity(xv, -2.5e2)
+	player.anim.state = 'jump'
+	player.anim.frame = 5
 end
 
 function player.mousepressed(x, y, btn)
@@ -153,14 +172,16 @@ end
 
 function player.draw()
 	love.graphics.setColor(255, 255, 255)
-	if not player.inAir then
+	if player.anim.state == 'walk' then
 		local quad = anim.player.walk.quads[player.anim.frame]
 		local _, _, w, h = quad:getViewport()
 		love.graphics.draw(gfx.player.walkSheet, quad, player.getX(), player.getY(),
 							0, player.direction, 1, math.floor(w/2), math.floor(h/2))
-	else
-		love.graphics.draw(gfx.player.jump, player.getX(), player.getY(), 0,
-							player.direction, 1, gfx.player.jump:getWidth()/2, gfx.player.jump:getHeight()/2)
+	elseif player.anim.state == 'jump' then
+		local quad = anim.player.jump.quads[player.anim.frame]
+		local _, _, w, h = quad:getViewport()
+		love.graphics.draw(gfx.player.jumpSheet, quad, player.getX(), player.getY(),
+							0, player.direction, 1, math.floor(w/2), math.floor(h/2))
 	end
 	love.graphics.setLineWidth(1)
 	love.graphics.setColor(255, 0, 0)

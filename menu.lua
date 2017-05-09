@@ -38,6 +38,7 @@ menu.addButton{state='options', img=gfx.menu.back, id='back', y=230}
 
 
 function menu.mousepressed(x, y, btn)
+	local mx, my = screen2game(love.mouse.getPosition())
 	for i, v in pairs(menu.btns[menu.state]) do
 		if mx > v.x and mx < v.x+v.img:getWidth() and my > v.y and my < v.y+v.img:getHeight() then
 			if v.id == 'play' then
@@ -74,6 +75,7 @@ function menu.keypressed(k)
 end
 
 function menu.draw()
+	local mx, my = screen2game(love.mouse.getPosition())
 	love.graphics.setShader(shaders.menubg)
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.rectangle('fill', 0, 0, gsx, gsy)
