@@ -32,11 +32,11 @@ physWorld = love.physics.newWorld(0, 800, true)
 physWorld:setCallbacks(beginContact, endContact, preSolve, postSolve)
 objects = {
 	player = {
-		body = love.physics.newBody(physWorld, 260, 800, 'dynamic'),
+		body = love.physics.newBody(physWorld, 1260, 1000, 'dynamic'),
 		shape = love.physics.newRectangleShape(19, 33)
 	},
 	playerSensorDown = {
-		body = love.physics.newBody(physWorld, 260, 817, 'dynamic'),
+		body = love.physics.newBody(physWorld, 1260, 1017, 'dynamic'),
 		shape = love.physics.newRectangleShape(15, 1)
 	},
 	worldEdges = {
@@ -73,7 +73,7 @@ objects.playerSensorDown.fixture = love.physics.newFixture(objects.playerSensorD
 objects.playerSensorDown.fixture:setUserData{type='playerSensorDown'}
 objects.playerSensorDown.fixture:setSensor(true)
 
-objects.player.sensorDownJoint = love.physics.newWeldJoint(objects.player.body, objects.playerSensorDown.body, 260, 800)
+objects.player.sensorDownJoint = love.physics.newWeldJoint(objects.player.body, objects.playerSensorDown.body, 1260, 1000)
 
 for _, v in pairs(objects.worldEdges) do
 	v.fixture = love.physics.newFixture(v.body, v.shape, 1)
