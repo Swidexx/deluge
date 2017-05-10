@@ -66,6 +66,12 @@ function love.mousepressed(x, y, btn, isTouch)
 	end
 end
 
+function love.mousereleased(x, y, btn, isTouch)
+	if gamestate == 'menu' then
+		menu.mousereleased(x, y, btn)
+	end
+end
+
 function love.keypressed(k, scancode, isrepeat)
 	if gamestate == 'playing' then
 		player.keypressed(k, scancode, isrepeat)

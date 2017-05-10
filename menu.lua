@@ -1,8 +1,10 @@
 
-menu = {}
-menu.state = 'main'
+menu = {
+	state = 'main',
+	sliderHeld = {},
+	btns = {}
+}
 
-menu.btns = {}
 function menu.addButton(t)
 	local img = t.img or gfx.menu.play
 	local x = t.x and t.x - img:getWidth()/2 or gsx/2 - img:getWidth()/2
@@ -40,7 +42,7 @@ menu.addButton{state='options', img=gfx.menu.back, id='back', y=230}
 function menu.mousepressed(x, y, btn)
 	local mx, my = screen2game(love.mouse.getPosition())
 	for i, v in pairs(menu.btns[menu.state]) do
-		if mx > v.x and mx < v.x+v.img:getWidth() and my > v.y and my < v.y+v.img:getHeight() then
+		if (v.type ~= 'static' and v.type ~= 'slider') and mx > v.x and mx < v.x+v.img:getWidth() and my > v.y and my < v.y+v.img:getHeight() then
 			if v.id == 'play' then
 				gamestate = 'playing'
 			elseif v.id == 'options' then
@@ -60,8 +62,14 @@ function menu.mousepressed(x, y, btn)
 				love.resize(w, h)
 			end
 			break
+		elseif v.type == 'slider' and mx > v.x+v.img:getWidth()/2-v.width/2 and mx < v.x+v.img:getWidth()/2+v.width/2 and my > v.y and my < v.y+v.img:getHeight() then
+			menu.sliderHeld = {state=menu.state, id=i}
 		end
 	end
+end
+
+function menu.mousereleased(x, y, btn)
+	menu.sliderHeld.id = nil
 end
 
 function menu.keypressed(k)
@@ -76,12 +84,20 @@ end
 
 function menu.draw()
 	local mx, my = screen2game(love.mouse.getPosition())
+	if menu.sliderHeld.state == menu.state and menu.sliderHeld.id then
+		local v = menu.btns[menu.sliderHeld.state][menu.sliderHeld.id]
+		if v.id == 'volume' then
+			v.val = math.min(math.max((mx-(v.x+v.img:getWidth()/2-v.width/2))/(v.width-3), 0), 1)
+			love.audio.setVolume(v.val)
+		end
+	end
 	love.graphics.setShader(shaders.menubg)
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.rectangle('fill', 0, 0, gsx, gsy)
 	love.graphics.setShader()
 	for i, v in pairs(menu.btns[menu.state]) do
-		if mx > v.x and mx < v.x+v.img:getWidth() and my > v.y and my < v.y+v.img:getHeight() and v.type ~= 'static' then
+		if ((v.type ~= 'static' and v.type ~= 'slider') and mx > v.x and mx < v.x+v.img:getWidth() or
+		v.type == 'slider' and mx > v.x+v.img:getWidth()/2-v.width/2 and mx < v.x+v.img:getWidth()/2+v.width/2) and my > v.y and my < v.y+v.img:getHeight() then
 			love.graphics.setColor(255, 255, 255, 200)
 		else
 			love.graphics.setColor(255, 255, 255)
