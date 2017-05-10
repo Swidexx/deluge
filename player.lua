@@ -71,6 +71,12 @@ function player.update(dt)
 		end
 	end
 
+	if player.anim.state ~= 'jump' then
+		if player.inAir then
+			player.anim.state = 'jump'
+			player.anim.frame = 4
+		end
+	end
 	if player.anim.state == 'walk' then
 		if player.walking then
 			--player.anim.frameTime = player.anim.frameTime + math.max(math.abs(xv), 20)*0.5*dt
