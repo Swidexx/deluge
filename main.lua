@@ -14,8 +14,11 @@ love.filesystem.setIdentity(love.window.getTitle())
 math.randomseed(love.timer.getTime())
 
 function love.load()
-	gamestate = 'menu'
+	gamestate = 'splash'
 	hud.set()
+	sfx.techemonic:play()
+	sfx.techemonic:seek(3)
+	sfx.techemonic:setPitch(0.6)
 end
 
 gameScale = math.max(math.min(ssx/gsx, ssy/gsy), 1)
@@ -52,7 +55,11 @@ function love.update(dt)
 end
 
 function love.mousepressed(x, y, btn, isTouch)
-	if gamestate == 'menu' then
+	if gamestate == 'splash' then
+		sfx.techemonic:stop()
+		sfx.music.rhymull:play()
+		gamestate = 'menu'
+	elseif gamestate == 'menu' then
 		menu.mousepressed(x, y, btn)
 	elseif gamestate == 'playing' then
 		player.mousepressed(x, y, btn)
@@ -72,7 +79,16 @@ end
 
 function love.draw()
 	love.graphics.setCanvas(canvases.game)
-	if gamestate == 'menu' then
+	if gamestate == 'splash' then
+		love.graphics.setShader(shaders.splashScreen)
+		shaders.splashScreen:send('time', time)
+		love.graphics.draw(gfx.techemonic, 0, 0)
+		love.graphics.setShader()
+		if time > 5 then
+			gamestate = 'menu'
+			sfx.music.rhymull:play()
+		end
+	elseif gamestate == 'menu' then
 		menu.draw()
 	elseif gamestate == 'playing' then
 		love.graphics.setColor(170, 200, 255)
