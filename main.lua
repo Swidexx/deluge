@@ -57,7 +57,7 @@ end
 function love.mousepressed(x, y, btn, isTouch)
 	if gamestate == 'splash' then
 		sfx.techemonic:stop()
-		sfx.music.rhymull:play()
+		music.rhymull:play()
 		gamestate = 'menu'
 	elseif gamestate == 'menu' then
 		menu.mousepressed(x, y, btn)
@@ -92,7 +92,7 @@ function love.draw()
 		love.graphics.setShader()
 		if time > 5 then
 			gamestate = 'menu'
-			sfx.music.rhymull:play()
+			music.rhymull:play()
 		end
 	elseif gamestate == 'menu' then
 		menu.draw()

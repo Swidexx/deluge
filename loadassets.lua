@@ -77,9 +77,6 @@ for i=1, 8 do
 end
 
 sfx = {
-	music = {
-		rhymull = love.audio.newSource('sfx/Rhymull.ogg', 'stream')
-	},
 	death = love.audio.newSource('sfx/Death.wav', 'static'),
 	explosion = love.audio.newSource('sfx/Explosion.wav', 'static'),
 	hitHurt = love.audio.newSource('sfx/Hit_Hurt.wav', 'static'),
@@ -90,7 +87,14 @@ sfx = {
 	techemonic = love.audio.newSource('sfx/techemonic.wav', 'static')
 }
 
-sfx.music.rhymull:setLooping(true)
+music = {
+	rhymull = love.audio.newSource('music/Rhymull.ogg', 'stream'),
+	home = love.audio.newSource('music/home.ogg', 'stream')
+}
+
+for _, v in pairs(music) do
+	v:setLooping(true)
+end
 
 shaders = {
 	splashScreen = love.graphics.newShader('shaders/splashScreen.glsl'),
