@@ -88,8 +88,8 @@ sfx = {
 }
 
 music = {
-	rhymull = love.audio.newSource('music/Rhymull.ogg', 'stream'),
-	home = love.audio.newSource('music/home.ogg', 'stream')
+	home = love.audio.newSource('music/home.ogg', 'stream'),
+	rhymull = love.audio.newSource('music/Rhymull.ogg', 'stream')
 }
 
 for _, v in pairs(music) do

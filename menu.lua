@@ -46,8 +46,8 @@ function menu.mousepressed(x, y, btn)
 		if (v.type ~= 'static' and v.type ~= 'slider') and mx > v.x and mx < v.x+v.img:getWidth() and my > v.y and my < v.y+v.img:getHeight() then
 			if v.id == 'play' then
 				gamestate = 'playing'
-				music.rhymull:stop()
-				music.home:play()
+				music.home:stop()
+				music.rhymull:play()
 			elseif v.id == 'options' then
 				menu.state = 'options'
 			elseif v.id == 'exit' then
