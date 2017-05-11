@@ -15,7 +15,6 @@ math.randomseed(love.timer.getTime())
 
 function love.load()
 	gamestate = 'splash'
-	hud.set()
 	sfx.techemonic:play()
 	sfx.techemonic:seek(3)
 	sfx.techemonic:setPitch(0.6)

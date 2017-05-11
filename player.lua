@@ -2,6 +2,7 @@
 player = {
 	getX = function() return objects.player.body:getX() end,
 	getY = function() return objects.player.body:getY() end,
+	health = 4,
 	anim = {
 		state = 'jump',
 		frame = 8,
@@ -10,6 +11,8 @@ player = {
 	},
 	direction = 1,
 	inAir = true,
+	inAirLast = true,
+	jumped = true,
 	walking = false,
 	lastEnemyJump = 0,
 	grapple = {
@@ -20,6 +23,12 @@ player = {
 		ray = {x1=0, y1=0, x2=0, y2=0}
 	}
 }
+
+function player.respawn()
+	player.health = 4
+	objects.player.body:setPosition(1260, 1000)
+	objects.playerSensorDown.body:setPosition(1260, 1017)
+end
 
 function player.update(dt)
 	local xv, yv = objects.player.body:getLinearVelocity()
@@ -49,6 +58,7 @@ function player.update(dt)
 	end
 
 	local jumpContacts = objects.playerSensorDown.body:getContactList()
+	player.lastInAir = player.inAir
 	player.inAir = true
 	for _, v in pairs(jumpContacts) do
 		if v:isTouching() then
@@ -69,6 +79,11 @@ function player.update(dt)
 				player.inAir = false
 			end
 		end
+	end
+
+	if player.lastInAir and not player.inAir then
+		player.jumped = false
+		sfx.land:clone():play()
 	end
 
 	if player.anim.state ~= 'jump' then
@@ -110,14 +125,31 @@ function player.update(dt)
 	if player.anim.frameTime > 1 then
 		player.anim.frameTime = math.min(player.anim.frameTime - 1, 1)
 		player.anim.frame = player.anim.nextFrame
+		if player.anim.state == 'walk' and (player.anim.frame == 9 or player.anim.frame == 16) then
+			sfx.step:clone():play()
+		end
 	end
 end
 
 function player.jump()
+	if objects.player.grappleJoint then
+		objects.player.grappleJoint:destroy()
+		objects.player.grappleJoint = nil
+		player.grapple.found = false
+	end
 	local xv, yv = objects.player.body:getLinearVelocity()
 	objects.player.body:setLinearVelocity(xv, -2.5e2)
-	player.anim.state = 'jump'
-	player.anim.frame = 5
+	player.jumped = true
+	sfx.jump:clone():play()
+end
+
+function player.damage(d)
+	player.health = player.health - d
+	sfx.hitHurt:clone():play()
+	if player.health <= 0 then
+		sfx.death:clone():play()
+		player.respawn()
+	end
 end
 
 function player.mousepressed(x, y, btn)
@@ -164,13 +196,11 @@ end
 function player.keypressed(k, scancode, isrepeat)
 	local xv, yv = objects.player.body:getLinearVelocity()
 	if k == 'space' then
-		if player.inAir then
-			if objects.player.grappleJoint then
-				objects.player.grappleJoint:destroy()
-				objects.player.grappleJoint = nil
-				player.jump()
-			end
-		else
+		if player.inAir and objects.player.grappleJoint then
+			objects.player.grappleJoint:destroy()
+			objects.player.grappleJoint = nil
+			player.jump()
+		elseif not player.jumped then
 			player.jump()
 		end
 	end

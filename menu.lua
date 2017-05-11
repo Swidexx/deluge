@@ -5,6 +5,18 @@ menu = {
 	btns = {}
 }
 
+function setSFXVolume(n)
+	for _, v in pairs(sfx) do
+		v:setVolume(n)
+	end
+end
+
+function setMusicVolume(n)
+	for _, v in pairs(music) do
+		v:setVolume(n)
+	end
+end
+
 function menu.addButton(t)
 	local img = t.img or gfx.menu.play
 	local x = t.x and t.x - img:getWidth()/2 or gsx/2 - img:getWidth()/2
@@ -34,7 +46,9 @@ menu.addButton{img=gfx.menu.exit, id='exit', y=230}
 menu.addButton{state='options', img=gfx.menu.volume, id='volume', type='slider', val=0.7, y=50}
 love.audio.setVolume(0.7)
 menu.addButton{state='options', img=gfx.menu.sfx, id='sfx', type='slider', val=0.7, width=56, x=gsx/2-30, y=70}
+setSFXVolume(0.7)
 menu.addButton{state='options', img=gfx.menu.music, id='music', type='slider', val=0.7, width=56, x=gsx/2+30, y=70}
+setMusicVolume(0.7)
 menu.addButton{state='options', img=gfx.menu.fullscreen, id='fullscreen', type='switch', val=0, y=130}
 menu.addButton{state='options', img=gfx.menu.windowsize, id='windowsize', type='cycle', val=2, numvals=4, y=150}
 menu.addButton{state='options', img=gfx.menu.back, id='back', y=230}
@@ -92,6 +106,12 @@ function menu.draw()
 		if v.id == 'volume' then
 			v.val = math.min(math.max((mx-(v.x+v.img:getWidth()/2-v.width/2))/(v.width-3), 0), 1)
 			love.audio.setVolume(v.val)
+		elseif v.id == 'sfx' then
+			v.val = math.min(math.max((mx-(v.x+v.img:getWidth()/2-v.width/2))/(v.width-3), 0), 1)
+			setSFXVolume(v.val)
+		elseif v.id == 'music' then
+			v.val = math.min(math.max((mx-(v.x+v.img:getWidth()/2-v.width/2))/(v.width-3), 0), 1)
+			setMusicVolume(v.val)
 		end
 	end
 	love.graphics.setShader(shaders.menubg)

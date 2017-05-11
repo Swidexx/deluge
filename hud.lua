@@ -1,31 +1,28 @@
-hud = {}
 
-function hud.set()
-  health = 5
-end
+hud = {
+	face = gfx.hud.health1
+}
 
 function hud.update(dt)
-
 	if love.keyboard.isDown('up') then
-		health = health + 0.1
-  elseif love.keyboard.isDown('down') then
-		health = health - 0.1
+		player.health = player.health + dt*5
+	elseif love.keyboard.isDown('down') then
+		player.health = player.health - dt*5
 	end
-
-  if health > 4 then
-    face = gfx.hud.health1
-  elseif health > 3 then
-    face = gfx.hud.health2
-  elseif health > 2 then
-    face = gfx.hud.health3
-  elseif health > 1 then
-    face = gfx.hud.health4
-  elseif health > -1 then
-    face = gfx.hud.health5
-  end
+	if player.health > 3 then
+		hud.face = gfx.hud.health1
+	elseif player.health > 2 then
+		hud.face = gfx.hud.health2
+	elseif player.health > 1 then
+		hud.face = gfx.hud.health3
+	elseif player.health > 0 then
+		hud.face = gfx.hud.health4
+	else
+		hud.face = gfx.hud.health5
+	end
 end
 
 function hud.draw()
-  love.graphics.setColor(255, 255, 255)
-	love.graphics.draw(face)
+	love.graphics.setColor(255, 255, 255)
+	love.graphics.draw(hud.face, -3, 4)
 end
