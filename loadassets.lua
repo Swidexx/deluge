@@ -32,7 +32,15 @@ gfx = {
 		health2 = love.graphics.newImage('gfx/hud/health/skin1/2.png'),
 		health3 = love.graphics.newImage('gfx/hud/health/skin1/3.png'),
 		health4 = love.graphics.newImage('gfx/hud/health/skin1/4.png'),
-		health5 = love.graphics.newImage('gfx/hud/health/skin1/5.png')
+		health5 = love.graphics.newImage('gfx/hud/health/skin1/5.png'),
+		inventory = love.graphics.newImage('gfx/hud/inV1.png')
+	},
+	items = {
+		radiantStaff = love.graphics.newImage('gfx/items/radiantStaff.png')
+	},
+	objects = {
+		stoneChest = love.graphics.newImage('gfx/objects/stoneChest.png'),
+		chestSheet = love.graphics.newImage('gfx/objects/chest-Sheet.png')
 	}
 }
 
@@ -61,8 +69,15 @@ anim = {
 			sheet = gfx.player.jumpSheet,
 			quads = {}
 		}
+	},
+	objects = {
+		chest = {
+			sheet = gfx.objects.chestSheet,
+			quads = {}
+		}
 	}
 }
+
 for i=1, 16 do
 	local x = (i-1)*20
 	local y = 0
@@ -74,6 +89,13 @@ for i=1, 8 do
 	local y = 0
 	table.insert(anim.player.jump.quads, love.graphics.newQuad(x, y, 19, 34,
 					gfx.player.jumpSheet:getWidth(), gfx.player.jumpSheet:getHeight()))
+end
+
+for i=1, 10 do
+	local x = (i-1)*33
+	local y = 0
+	table.insert(anim.objects.chest.quads, love.graphics.newQuad(x, y, 32, 32,
+					gfx.objects.chestSheet:getWidth(), gfx.objects.chestSheet:getHeight()))
 end
 
 sfx = {
