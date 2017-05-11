@@ -1,8 +1,22 @@
 
-menu = {}
-menu.state = 'main'
+menu = {
+	state = 'main',
+	sliderHeld = {},
+	btns = {}
+}
 
-menu.btns = {}
+function setSFXVolume(n)
+	for _, v in pairs(sfx) do
+		v:setVolume(n)
+	end
+end
+
+function setMusicVolume(n)
+	for _, v in pairs(music) do
+		v:setVolume(n)
+	end
+end
+
 function menu.addButton(t)
 	local img = t.img or gfx.menu.play
 	local x = t.x and t.x - img:getWidth()/2 or gsx/2 - img:getWidth()/2
@@ -30,8 +44,11 @@ menu.addButton{img=gfx.menu.play, id='play', y=140}
 menu.addButton{img=gfx.menu.options, id='options', y=180}
 menu.addButton{img=gfx.menu.exit, id='exit', y=230}
 menu.addButton{state='options', img=gfx.menu.volume, id='volume', type='slider', val=0.7, y=50}
+love.audio.setVolume(0.7)
 menu.addButton{state='options', img=gfx.menu.sfx, id='sfx', type='slider', val=0.7, width=56, x=gsx/2-30, y=70}
+setSFXVolume(0.7)
 menu.addButton{state='options', img=gfx.menu.music, id='music', type='slider', val=0.7, width=56, x=gsx/2+30, y=70}
+setMusicVolume(0.7)
 menu.addButton{state='options', img=gfx.menu.fullscreen, id='fullscreen', type='switch', val=0, y=130}
 menu.addButton{state='options', img=gfx.menu.windowsize, id='windowsize', type='cycle', val=2, numvals=4, y=150}
 menu.addButton{state='options', img=gfx.menu.back, id='back', y=230}
@@ -40,9 +57,11 @@ menu.addButton{state='options', img=gfx.menu.back, id='back', y=230}
 function menu.mousepressed(x, y, btn)
 	local mx, my = screen2game(love.mouse.getPosition())
 	for i, v in pairs(menu.btns[menu.state]) do
-		if mx > v.x and mx < v.x+v.img:getWidth() and my > v.y and my < v.y+v.img:getHeight() then
+		if (v.type ~= 'static' and v.type ~= 'slider') and mx > v.x and mx < v.x+v.img:getWidth() and my > v.y and my < v.y+v.img:getHeight() then
 			if v.id == 'play' then
 				gamestate = 'playing'
+				music.home:stop()
+				music.rhymull:play()
 			elseif v.id == 'options' then
 				menu.state = 'options'
 			elseif v.id == 'exit' then
@@ -60,8 +79,14 @@ function menu.mousepressed(x, y, btn)
 				love.resize(w, h)
 			end
 			break
+		elseif v.type == 'slider' and mx > v.x+v.img:getWidth()/2-v.width/2 and mx < v.x+v.img:getWidth()/2+v.width/2 and my > v.y and my < v.y+v.img:getHeight() then
+			menu.sliderHeld = {state=menu.state, id=i}
 		end
 	end
+end
+
+function menu.mousereleased(x, y, btn)
+	menu.sliderHeld.id = nil
 end
 
 function menu.keypressed(k)
@@ -76,12 +101,26 @@ end
 
 function menu.draw()
 	local mx, my = screen2game(love.mouse.getPosition())
+	if menu.sliderHeld.state == menu.state and menu.sliderHeld.id then
+		local v = menu.btns[menu.sliderHeld.state][menu.sliderHeld.id]
+		if v.id == 'volume' then
+			v.val = math.min(math.max((mx-(v.x+v.img:getWidth()/2-v.width/2))/(v.width-3), 0), 1)
+			love.audio.setVolume(v.val)
+		elseif v.id == 'sfx' then
+			v.val = math.min(math.max((mx-(v.x+v.img:getWidth()/2-v.width/2))/(v.width-3), 0), 1)
+			setSFXVolume(v.val)
+		elseif v.id == 'music' then
+			v.val = math.min(math.max((mx-(v.x+v.img:getWidth()/2-v.width/2))/(v.width-3), 0), 1)
+			setMusicVolume(v.val)
+		end
+	end
 	love.graphics.setShader(shaders.menubg)
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.rectangle('fill', 0, 0, gsx, gsy)
 	love.graphics.setShader()
 	for i, v in pairs(menu.btns[menu.state]) do
-		if mx > v.x and mx < v.x+v.img:getWidth() and my > v.y and my < v.y+v.img:getHeight() and v.type ~= 'static' then
+		if ((v.type ~= 'static' and v.type ~= 'slider') and mx > v.x and mx < v.x+v.img:getWidth() or
+		v.type == 'slider' and mx > v.x+v.img:getWidth()/2-v.width/2 and mx < v.x+v.img:getWidth()/2+v.width/2) and my > v.y and my < v.y+v.img:getHeight() then
 			love.graphics.setColor(255, 255, 255, 200)
 		else
 			love.graphics.setColor(255, 255, 255)

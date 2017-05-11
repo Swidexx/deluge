@@ -6,6 +6,7 @@ gsy = 270
 time = 0
 
 gfx = {
+	techemonic = love.graphics.newImage('gfx/techemonic.png'),
 	menu = {
 		bg = love.graphics.newImage('gfx/menu/bg.png'),
 		title = love.graphics.newImage('gfx/menu/title.png'),
@@ -75,7 +76,28 @@ for i=1, 8 do
 					gfx.player.jumpSheet:getWidth(), gfx.player.jumpSheet:getHeight()))
 end
 
+sfx = {
+	death = love.audio.newSource('sfx/Death.wav', 'static'),
+	explosion = love.audio.newSource('sfx/Explosion.wav', 'static'),
+	hitHurt = love.audio.newSource('sfx/Hit_Hurt.wav', 'static'),
+	jump = love.audio.newSource('sfx/Jump.wav', 'static'),
+	land = love.audio.newSource('sfx/Land.wav', 'static'),
+	powerUp = love.audio.newSource('sfx/PowerUp.wav', 'static'),
+	step = love.audio.newSource('sfx/Step.wav', 'static'),
+	techemonic = love.audio.newSource('sfx/techemonic.wav', 'static')
+}
+
+music = {
+	home = love.audio.newSource('music/home.ogg', 'stream'),
+	rhymull = love.audio.newSource('music/Rhymull.ogg', 'stream')
+}
+
+for _, v in pairs(music) do
+	v:setLooping(true)
+end
+
 shaders = {
+	splashScreen = love.graphics.newShader('shaders/splashScreen.glsl'),
 	menubg = love.graphics.newShader('shaders/menubg.glsl'),
 	fontAlias = love.graphics.newShader('shaders/fontAlias.glsl')
 }
