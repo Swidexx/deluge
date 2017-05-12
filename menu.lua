@@ -62,25 +62,32 @@ function menu.mousepressed(x, y, btn)
 				gamestate = 'playing'
 				music.home:stop()
 				music.rhymull:play()
+				sfx.select:clone():play()
 			elseif v.id == 'options' then
 				menu.state = 'options'
+				sfx.select:clone():play()
 			elseif v.id == 'exit' then
 				love.event.quit()
+				sfx.select:clone():play()
 			elseif v.id == 'back' then
 				menu.state = 'main'
+				sfx.select:clone():play()
 			elseif v.id == 'fullscreen' then
 				love.window.setFullscreen(not love.window.getFullscreen())
 				v.val = 1-v.val
+				sfx.select:clone():play()
 			elseif v.id == 'windowsize' and not love.window.getFullscreen() then
 				v.val = (v.val+1)%v.numvals
 				_, _, flags = love.window.getMode()
 				local w, h = gsx*(v.val+1), gsy*(v.val+1)
 				love.window.setMode(w, h, flags)
 				love.resize(w, h)
+				sfx.select:clone():play()
 			end
 			break
 		elseif v.type == 'slider' and mx > v.x+v.img:getWidth()/2-v.width/2 and mx < v.x+v.img:getWidth()/2+v.width/2 and my > v.y and my < v.y+v.img:getHeight() then
 			menu.sliderHeld = {state=menu.state, id=i}
+			break
 		end
 	end
 end

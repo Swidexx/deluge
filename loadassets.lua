@@ -101,10 +101,16 @@ end
 sfx = {
 	death = love.audio.newSource('sfx/Death.wav', 'static'),
 	explosion = love.audio.newSource('sfx/Explosion.wav', 'static'),
+	fire = love.audio.newSource('sfx/Fire.wav', 'static'),
+	heal = love.audio.newSource('sfx/Heal.wav', 'static'),
 	hitHurt = love.audio.newSource('sfx/Hit_Hurt.wav', 'static'),
 	jump = love.audio.newSource('sfx/Jump.wav', 'static'),
 	land = love.audio.newSource('sfx/Land.wav', 'static'),
+	laser = love.audio.newSource('sfx/Laser.wav', 'static'),
+	navDown = love.audio.newSource('sfx/NavDown.wav', 'static'),
+	navUp = love.audio.newSource('sfx/NavUp.wav', 'static'),
 	powerUp = love.audio.newSource('sfx/PowerUp.wav', 'static'),
+	select = love.audio.newSource('sfx/Select.wav', 'static'),
 	step = love.audio.newSource('sfx/Step.wav', 'static'),
 	techemonic = love.audio.newSource('sfx/techemonic.wav', 'static')
 }

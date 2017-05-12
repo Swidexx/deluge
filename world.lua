@@ -4,10 +4,15 @@ world = {}
 chestState = 1
 function world.update(dt)
 	physWorld:update(dt)
+	local lastState = chestState
 	if (player:getX()-1488)^2+(player:getY()-1120)^2 < 48^2 then
 		chestState = math.min(chestState + dt*8, 10)
 	else
 		chestState = math.max(chestState - dt*8, 1)
+	end
+	if chestState == 10 and lastState ~= chestState then
+		player.health = 4
+		sfx.heal:clone():play()
 	end
 end
 

@@ -158,6 +158,7 @@ function player.mousepressed(x, y, btn)
 	if btn == 1 then
 		spawnBullet(player.getX(), player.getY(), a, 1.2e3)
 		player.direction = x < 0 and -1 or 1
+		sfx.laser:clone():play()
 	elseif btn == 2 then
 		player.grapple.found = false
 		physWorld:rayCast(player.getX(), player.getY(), player.getX() + math.cos(a)*150,
@@ -171,6 +172,7 @@ function player.mousepressed(x, y, btn)
 					player.grapple.fixture:getBody(), player.getX(), player.getY(),
 					player.grapple.x, player.grapple.y,
 					math.sqrt((player.getX()-player.grapple.x)^2+(player.getY()-player.grapple.y)^2), true)
+			sfx.select:clone():play()
 		end
 	end
 end
