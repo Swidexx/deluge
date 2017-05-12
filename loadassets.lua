@@ -32,7 +32,15 @@ gfx = {
 		health2 = love.graphics.newImage('gfx/hud/health/skin1/2.png'),
 		health3 = love.graphics.newImage('gfx/hud/health/skin1/3.png'),
 		health4 = love.graphics.newImage('gfx/hud/health/skin1/4.png'),
-		health5 = love.graphics.newImage('gfx/hud/health/skin1/5.png')
+		health5 = love.graphics.newImage('gfx/hud/health/skin1/5.png'),
+		inventory = love.graphics.newImage('gfx/hud/inV1.png')
+	},
+	items = {
+		radiantStaff = love.graphics.newImage('gfx/items/radiantStaff.png')
+	},
+	objects = {
+		stoneChest = love.graphics.newImage('gfx/objects/stoneChest.png'),
+		chestSheet = love.graphics.newImage('gfx/objects/chest-Sheet.png')
 	}
 }
 
@@ -61,8 +69,15 @@ anim = {
 			sheet = gfx.player.jumpSheet,
 			quads = {}
 		}
+	},
+	objects = {
+		chest = {
+			sheet = gfx.objects.chestSheet,
+			quads = {}
+		}
 	}
 }
+
 for i=1, 16 do
 	local x = (i-1)*20
 	local y = 0
@@ -76,13 +91,26 @@ for i=1, 8 do
 					gfx.player.jumpSheet:getWidth(), gfx.player.jumpSheet:getHeight()))
 end
 
+for i=1, 10 do
+	local x = (i-1)*33
+	local y = 0
+	table.insert(anim.objects.chest.quads, love.graphics.newQuad(x, y, 32, 32,
+					gfx.objects.chestSheet:getWidth(), gfx.objects.chestSheet:getHeight()))
+end
+
 sfx = {
 	death = love.audio.newSource('sfx/Death.wav', 'static'),
 	explosion = love.audio.newSource('sfx/Explosion.wav', 'static'),
+	fire = love.audio.newSource('sfx/Fire.wav', 'static'),
+	heal = love.audio.newSource('sfx/Heal.wav', 'static'),
 	hitHurt = love.audio.newSource('sfx/Hit_Hurt.wav', 'static'),
 	jump = love.audio.newSource('sfx/Jump.wav', 'static'),
 	land = love.audio.newSource('sfx/Land.wav', 'static'),
+	laser = love.audio.newSource('sfx/Laser.wav', 'static'),
+	navDown = love.audio.newSource('sfx/NavDown.wav', 'static'),
+	navUp = love.audio.newSource('sfx/NavUp.wav', 'static'),
 	powerUp = love.audio.newSource('sfx/PowerUp.wav', 'static'),
+	select = love.audio.newSource('sfx/Select.wav', 'static'),
 	step = love.audio.newSource('sfx/Step.wav', 'static'),
 	techemonic = love.audio.newSource('sfx/techemonic.wav', 'static')
 }

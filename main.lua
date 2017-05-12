@@ -51,6 +51,8 @@ function love.update(dt)
 				math.floor((my-gsy/2)/3) + (my-gsy/2 < 0 and 1 or 0)
 	camera.x = math.min(math.max(camera.x, 0), worldSize.x - gsx)
 	camera.y = math.min(math.max(camera.y, 0), worldSize.y - gsy)
+
+	collectgarbage()
 end
 
 function love.mousepressed(x, y, btn, isTouch)
