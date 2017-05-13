@@ -127,8 +127,12 @@ end
 shaders = {
 	splashScreen = love.graphics.newShader('shaders/splashScreen.glsl'),
 	menubg = love.graphics.newShader('shaders/menubg.glsl'),
-	fontAlias = love.graphics.newShader('shaders/fontAlias.glsl')
+	fontAlias = love.graphics.newShader('shaders/fontAlias.glsl'),
+	blur = love.graphics.newShader('shaders/blur.glsl'),
+	mapLighting = love.graphics.newShader('shaders/mapLighting.glsl')
 }
+
+shaders.blur:send('radius', 1)
 
 fonts = {
 	f8 = love.graphics.newFont(8),

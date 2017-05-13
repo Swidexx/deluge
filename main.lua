@@ -52,6 +52,8 @@ function love.update(dt)
 	camera.x = math.min(math.max(camera.x, 0), worldSize.x - gsx)
 	camera.y = math.min(math.max(camera.y, 0), worldSize.y - gsy)
 
+	shaders.mapLighting:send('camPos', {camera.x, camera.y})
+
 	collectgarbage()
 end
 
@@ -108,6 +110,10 @@ function love.draw()
 		player.draw()
 		bullets.draw()
 		camera:unset()
+		love.graphics.setShader(shaders.mapLighting)
+		love.graphics.setColor(255, 255, 255)
+		love.graphics.draw(love.graphics.newImage(canvases.game:newImageData()), 0, 0)
+		love.graphics.setShader()
 		hud.draw()
 	end
 	love.graphics.setCanvas()

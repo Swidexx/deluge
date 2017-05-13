@@ -45,6 +45,6 @@ function world.draw()
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.draw(gfx.map, 0, 0)
 	love.graphics.draw(gfx.objects.chestSheet, anim.objects.chest.quads[math.floor(chestState)], 1488, 1120, 0, 1, 1, 16, 32)
-
+	love.graphics.setColor(255, 255, 255)
 	--drawColliders()
 end
