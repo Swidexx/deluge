@@ -144,7 +144,8 @@ for _, v in pairs(fonts) do
 end
 
 canvases = {
-	game = love.graphics.newCanvas(gsx, gsy)
+	game = love.graphics.newCanvas(gsx, gsy),
+	lightWorld = love.graphics.newCanvas(gsx, gsy)
 }
 for _, v in pairs(canvases) do
 	v:setFilter('nearest', 'nearest')

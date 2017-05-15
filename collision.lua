@@ -122,14 +122,14 @@ for _, layer in ipairs(tileMap.layers) do
 					love.graphics.setCanvas(lightCanv)
 					love.graphics.setColor(0, 0, 0)
 					love.graphics.rectangle('fill', x*tileMap.tilewidth, y*tileMap.tileheight, tileMap.tilewidth, tileMap.tileheight)
+					love.graphics.setCanvas(airCanv)
+					love.graphics.setColor(0, 0, 0)
+					love.graphics.rectangle('fill', x*tileMap.tilewidth, y*tileMap.tileheight, tileMap.tilewidth, tileMap.tileheight)
 				else
 					love.graphics.setCanvas(lightCanv)
-					love.graphics.setColor(48, 128, 48)
+					love.graphics.setColor(16, 64, 16)
 					love.graphics.rectangle('fill', x*tileMap.tilewidth, y*tileMap.tileheight, tileMap.tilewidth, tileMap.tileheight)
 				end
-				love.graphics.setCanvas(airCanv)
-				love.graphics.setColor(0, 0, 0)
-				love.graphics.rectangle('fill', x*tileMap.tilewidth, y*tileMap.tileheight, tileMap.tilewidth, tileMap.tileheight)
 				love.graphics.setCanvas(mapCanv)
 				love.graphics.setColor(255, 255, 255)
 				love.graphics.draw(tileImage, quads[layer.data[idx]], x*tileMap.tilewidth, y*tileMap.tileheight)

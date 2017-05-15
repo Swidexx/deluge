@@ -3,10 +3,12 @@ require 'loadassets'
 
 LightWorld = require 'light_world'
 lightWorld = LightWorld{
-	ambient = {0, 0, 0}
+	ambient = {0, 0, 0},
+	shadowBlur = 1
 }
 lightWorld:refreshScreenSize(gsx, gsy)
-playerLight = lightWorld:newLight(0, 0, 255, 255, 255, 100000)
+lightWorld.shadow_buffer:setFilter('nearest', 'nearest')
+playerLight = lightWorld:newLight(0, 0, 255, 255, 255, 200)
 
 require 'collision'
 require 'camera'
@@ -45,7 +47,7 @@ function screen2game(x, y)
 end
 
 function love.update(dt)
-	love.window.setTitle("Deluge (" ..love.timer.getFPS() .. " FPS)")
+	love.window.setTitle("Deluge (" .. love.timer.getFPS() .. " FPS)")
 	time = time + dt
 	local mx, my = screen2game(love.mouse.getPosition())
 	if gamestate == 'playing' then
@@ -63,7 +65,7 @@ function love.update(dt)
 	camera.x = math.min(math.max(camera.x, 0), worldSize.x - gsx)
 	camera.y = math.min(math.max(camera.y, 0), worldSize.y - gsy)
 
-	lightWorld:setTranslation(camera.x, camera.y, 1)
+	lightWorld:setTranslation(-camera.x, -camera.y, 1)
 	lightWorld:update(dt)
 	shaders.mapLighting:send('camPos', {camera.x, camera.y})
 
@@ -123,15 +125,18 @@ function love.draw()
 		player.draw()
 		bullets.draw()
 		lightWorld:draw(function()
-			love.graphics.setCanvas(canvases.game)
+			love.graphics.setCanvas(canvases.lightWorld)
 			love.graphics.setColor(255, 255, 255)
 			love.graphics.rectangle('fill', 0, 0, worldSize.x, worldSize.y)
 		end)
 		camera:unset()
-		love.graphics.setShader(shaders.mapLighting)
 		love.graphics.setColor(255, 255, 255)
+		shaders.mapLighting:send('shadowMap', love.graphics.newImage(lightWorld.shadow_buffer:newImageData()))
+		love.graphics.setShader(shaders.mapLighting)
 		love.graphics.draw(love.graphics.newImage(canvases.game:newImageData()), 0, 0)
 		love.graphics.setShader()
+		--love.graphics.setColor(255, 255, 255, 200)
+		--love.graphics.draw(lightWorld.shadow_buffer, 0, 0)
 		hud.draw()
 	end
 	love.graphics.setCanvas()
