@@ -92,11 +92,7 @@ function addPhysTile(x, y, w, h)
 end
 
 local mapCanv = love.graphics.newCanvas(worldSize.x, worldSize.y)
-local lightCanv = love.graphics.newCanvas(worldSize.x, worldSize.y)
 local airCanv = love.graphics.newCanvas(worldSize.x, worldSize.y)
-love.graphics.setCanvas(lightCanv)
-love.graphics.setColor(192, 255, 192)
-love.graphics.rectangle('fill', 0, 0, worldSize.x, worldSize.y)
 love.graphics.setCanvas(airCanv)
 love.graphics.setColor(255, 255, 255)
 love.graphics.rectangle('fill', 0, 0, worldSize.x, worldSize.y)
@@ -119,15 +115,8 @@ for _, layer in ipairs(tileMap.layers) do
 			if layer.data[idx] ~= 0 then
 				if layer.name == 'main' then
 					physTiles[x .. ',' .. y] = true
-					love.graphics.setCanvas(lightCanv)
-					love.graphics.setColor(0, 0, 0)
-					love.graphics.rectangle('fill', x*tileMap.tilewidth, y*tileMap.tileheight, tileMap.tilewidth, tileMap.tileheight)
 					love.graphics.setCanvas(airCanv)
 					love.graphics.setColor(0, 0, 0)
-					love.graphics.rectangle('fill', x*tileMap.tilewidth, y*tileMap.tileheight, tileMap.tilewidth, tileMap.tileheight)
-				else
-					love.graphics.setCanvas(lightCanv)
-					love.graphics.setColor(16, 64, 16)
 					love.graphics.rectangle('fill', x*tileMap.tilewidth, y*tileMap.tileheight, tileMap.tilewidth, tileMap.tileheight)
 				end
 				love.graphics.setCanvas(mapCanv)
@@ -139,29 +128,14 @@ for _, layer in ipairs(tileMap.layers) do
 end
 gfx.map = love.graphics.newImage(mapCanv:newImageData())
 gfx.map:setFilter('nearest', 'nearest')
-lightCanv:setFilter('linear', 'linear')
-lightCanv_l16 = love.graphics.newCanvas(math.floor(worldSize.x/16), math.floor(worldSize.y/16))
-lightCanv_l16:setFilter('linear', 'linear')
-love.graphics.setCanvas(lightCanv_l16)
-love.graphics.setColor(255, 255, 255)
-love.graphics.draw(lightCanv, 0, 0, 0, 1/16, 1/16)
-love.graphics.setShader(shaders.blur)
-shaders.blur:send('radius', 1)
-shaders.blur:send('dir', {1, 0})
-love.graphics.draw(love.graphics.newImage(lightCanv_l16:newImageData()), 0, 0)
-shaders.blur:send('dir', {0, 1})
-love.graphics.draw(love.graphics.newImage(lightCanv_l16:newImageData()), 0, 0)
-love.graphics.setCanvas(lightCanv)
-love.graphics.draw(lightCanv_l16, 0, 0, 0, 16, 16)
-gfx.mapLighting = love.graphics.newImage(lightCanv:newImageData())
-gfx.mapLighting:setFilter('nearest', 'nearest')
 gfx.airMask = love.graphics.newImage(airCanv:newImageData())
 gfx.airMask:setFilter('nearest', 'nearest')
-shaders.mapLighting:send('lightMap', gfx.mapLighting)
 shaders.mapLighting:send('airMask', gfx.airMask)
 shaders.mapLighting:send('scale', {gsx/worldSize.x, gsy/worldSize.y})
 shaders.mapLighting:send('mapSize', {worldSize.x, worldSize.y})
+love.graphics.setCanvas()
 mapCanv = nil
+airCanv = nil
 physEdgeTiles = {}
 for x=0, tileMap.width-1 do
 	for y=0, tileMap.height-1 do
@@ -169,8 +143,7 @@ for x=0, tileMap.width-1 do
 			local enclosed = true
 			for ox=-1, 1 do
 				for oy=-1, 1 do
-					if x+ox > 0 and x+ox < tileMap.width and
-					y+oy > 0 and y+oy < tileMap.height and not physTiles[x+ox..','..y+oy] then
+					if not physTiles[x+ox..','..y+oy] then
 						enclosed = false
 					end
 				end
@@ -251,3 +224,17 @@ for _, v in pairs(physVertTables) do
 	addPhysTile(v[1].x*tileMap.tilewidth + tileMap.tilewidth/2, (start + fin)/2*tileMap.tileheight,
 				tileMap.tilewidth, (fin - start)*tileMap.tileheight)
 end
+
+--do sun
+lightWorld:refreshScreenSize(worldSize.x, worldSize.y)
+sunLight = lightWorld:newLight(3000, -1000, 255, 255, 1000000)
+local sunLightCanvas = love.graphics.newCanvas(worldSize.x, worldSize.y)
+lightWorld:draw(function()
+	love.graphics.setCanvas(sunLightCanvas)
+	love.graphics.setColor(255, 255, 255)
+	love.graphics.rectangle('fill', 0, 0, worldSize.x, worldSize.y)
+end)
+gfx.sunLightMap = love.graphics.newImage(lightWorld.shadow_buffer:newImageData())
+sunLightCanvas = nil
+lightWorld:remove(sunLight)
+lightWorld:refreshScreenSize(gsx, gsy)
