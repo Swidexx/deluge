@@ -129,6 +129,7 @@ shaders = {
 	menubg = love.graphics.newShader('shaders/menubg.glsl'),
 	fontAlias = love.graphics.newShader('shaders/fontAlias.glsl'),
 	blur = love.graphics.newShader('shaders/blur.glsl'),
+	max = love.graphics.newShader('shaders/max.glsl'),
 	mapLighting = love.graphics.newShader('shaders/mapLighting.glsl')
 }
 
@@ -145,11 +146,17 @@ end
 
 canvases = {
 	game = love.graphics.newCanvas(gsx, gsy),
-	lightWorld = love.graphics.newCanvas(gsx, gsy)
+	lightWorld = love.graphics.newCanvas(gsx, gsy),
+	lightMap = love.graphics.newCanvas(gsx, gsy),
+	lightMapBlur = love.graphics.newCanvas(gsx, gsy),
+	lightMapBlur_l8 = love.graphics.newCanvas(math.floor(gsx/8), math.floor(gsy/8))
 }
 for _, v in pairs(canvases) do
 	v:setFilter('nearest', 'nearest')
 end
+canvases.lightMap:setFilter('linear', 'linear')
+canvases.lightMapBlur:setFilter('linear', 'linear')
+canvases.lightMapBlur_l8:setFilter('linear', 'linear')
 
 local taserCanv = love.graphics.newCanvas(6, 4)
 love.graphics.setCanvas(taserCanv)

@@ -4,9 +4,8 @@ require 'loadassets'
 LightWorld = require 'light_world'
 lightWorld = LightWorld{
 	ambient = {0, 0, 0},
-	shadowBlur = 1
+	shadowBlur = 0
 }
-lightWorld:refreshScreenSize(gsx, gsy)
 lightWorld.shadow_buffer:setFilter('nearest', 'nearest')
 playerLight = lightWorld:newLight(0, 0, 255, 255, 255, 200)
 
@@ -131,12 +130,31 @@ function love.draw()
 		end)
 		camera:unset()
 		love.graphics.setColor(255, 255, 255)
-		shaders.mapLighting:send('shadowMap', love.graphics.newImage(lightWorld.shadow_buffer:newImageData()))
+		love.graphics.setCanvas(canvases.lightMap)
+		--love.graphics.setShader(shaders.max)
+		--shaders.max:send('other', love.graphics.newImage(lightWorld.shadow_buffer:newImageData()))
+		--love.graphics.draw(gfx.sunLightMap, -camera.x, -camera.y)
+		love.graphics.draw(lightWorld.shadow_buffer, 0, 0)
+		love.graphics.setShader()
+		love.graphics.setCanvas(canvases.lightMapBlur_l8)
+		love.graphics.draw(canvases.lightMap, 0, 0, 0, 1/8, 1/8)
+		love.graphics.setShader(shaders.blur)
+		shaders.blur:send('radius', 1)
+		shaders.blur:send('dir', {1, 0})
+		love.graphics.draw(love.graphics.newImage(canvases.lightMapBlur_l8:newImageData()), 0, 0)
+		shaders.blur:send('dir', {0, 1})
+		love.graphics.draw(love.graphics.newImage(canvases.lightMapBlur_l8:newImageData()), 0, 0)
+		love.graphics.setShader()
+		love.graphics.setCanvas(canvases.lightMapBlur)
+		love.graphics.draw(canvases.lightMapBlur_l8, 0, 0, 0, 8, 8)
+		shaders.mapLighting:send('lightMap', love.graphics.newImage(canvases.lightMap:newImageData()))
+		shaders.mapLighting:send('lightMapBlur', love.graphics.newImage(canvases.lightMapBlur:newImageData()))
+		love.graphics.setCanvas(canvases.game)
 		love.graphics.setShader(shaders.mapLighting)
 		love.graphics.draw(love.graphics.newImage(canvases.game:newImageData()), 0, 0)
 		love.graphics.setShader()
-		--love.graphics.setColor(255, 255, 255, 200)
-		--love.graphics.draw(lightWorld.shadow_buffer, 0, 0)
+		love.graphics.setColor(255, 255, 255, 200)
+		love.graphics.draw(gfx.sunLightMap, -camera.x, -camera.y)
 		hud.draw()
 	end
 	love.graphics.setCanvas()
