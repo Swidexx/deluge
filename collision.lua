@@ -93,10 +93,12 @@ end
 
 local mapCanv = love.graphics.newCanvas(worldSize.x, worldSize.y)
 local airCanv = love.graphics.newCanvas(worldSize.x, worldSize.y)
+local sunCanv = love.graphics.newCanvas(worldSize.x, worldSize.y)
 love.graphics.setCanvas(airCanv)
 love.graphics.setColor(255, 255, 255)
 love.graphics.rectangle('fill', 0, 0, worldSize.x, worldSize.y)
-love.graphics.setCanvas(mapCanv)
+love.graphics.setCanvas(sunCanv)
+love.graphics.rectangle('fill', 0, 0, worldSize.x, worldSize.y)
 local tileImage = love.graphics.newImage('map/tilesheet.png')
 tileImage:setFilter('nearest', 'nearest')
 gfx.tileImage = tileImage
@@ -119,6 +121,9 @@ for _, layer in ipairs(tileMap.layers) do
 					love.graphics.setColor(0, 0, 0)
 					love.graphics.rectangle('fill', x*tileMap.tilewidth, y*tileMap.tileheight, tileMap.tilewidth, tileMap.tileheight)
 				end
+				love.graphics.setCanvas(sunCanv)
+				love.graphics.setColor(0, 0, 0)
+				love.graphics.rectangle('fill', x*tileMap.tilewidth, y*tileMap.tileheight, tileMap.tilewidth, tileMap.tileheight)
 				love.graphics.setCanvas(mapCanv)
 				love.graphics.setColor(255, 255, 255)
 				love.graphics.draw(tileImage, quads[layer.data[idx]], x*tileMap.tilewidth, y*tileMap.tileheight)
@@ -130,9 +135,14 @@ gfx.map = love.graphics.newImage(mapCanv:newImageData())
 gfx.map:setFilter('nearest', 'nearest')
 gfx.airMask = love.graphics.newImage(airCanv:newImageData())
 gfx.airMask:setFilter('nearest', 'nearest')
+gfx.sunLightMap = love.graphics.newImage(sunCanv:newImageData())
+gfx.sunLightMap:setFilter('nearest', 'nearest')
 shaders.mapLighting:send('airMask', gfx.airMask)
 shaders.mapLighting:send('scale', {gsx/worldSize.x, gsy/worldSize.y})
 shaders.mapLighting:send('mapSize', {worldSize.x, worldSize.y})
+shaders.addSun:send('sunLightMap', gfx.sunLightMap)
+shaders.addSun:send('scale', {gsx/worldSize.x, gsy/worldSize.y})
+shaders.addSun:send('mapSize', {worldSize.x, worldSize.y})
 love.graphics.setCanvas()
 mapCanv = nil
 airCanv = nil
@@ -225,16 +235,20 @@ for _, v in pairs(physVertTables) do
 				tileMap.tilewidth, (fin - start)*tileMap.tileheight)
 end
 
---do sun
+--do sunLight
+--[[
+--max size is screen?
 lightWorld:refreshScreenSize(worldSize.x, worldSize.y)
-sunLight = lightWorld:newLight(3000, -1000, 255, 255, 1000000)
+sunLight = lightWorld:newLight(worldSize.x, worldSize.y/2, 255, 255, 255, 100000)
 local sunLightCanvas = love.graphics.newCanvas(worldSize.x, worldSize.y)
+love.graphics.setCanvas(sunLightCanvas)
 lightWorld:draw(function()
 	love.graphics.setCanvas(sunLightCanvas)
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.rectangle('fill', 0, 0, worldSize.x, worldSize.y)
 end)
 gfx.sunLightMap = love.graphics.newImage(lightWorld.shadow_buffer:newImageData())
+lightWorld.shadow_buffer:newImageData():encode('png', 'sun_shadow_buffer.png')
 sunLightCanvas = nil
-lightWorld:remove(sunLight)
-lightWorld:refreshScreenSize(gsx, gsy)
+--lightWorld:remove(sunLight)
+]]

@@ -1,14 +1,6 @@
 
 require 'loadassets'
-
-LightWorld = require 'light_world'
-lightWorld = LightWorld{
-	ambient = {0, 0, 0},
-	shadowBlur = 0
-}
-lightWorld.shadow_buffer:setFilter('nearest', 'nearest')
-playerLight = lightWorld:newLight(0, 0, 255, 255, 255, 200)
-
+require 'lighting'
 require 'collision'
 require 'camera'
 require 'easing'
@@ -19,9 +11,6 @@ require 'enemies'
 require 'hud'
 require 'player'
 require 'bullets'
-
-love.filesystem.setIdentity(love.window.getTitle())
-math.randomseed(love.timer.getTime())
 
 function love.load()
 	gamestate = 'splash'
@@ -64,9 +53,7 @@ function love.update(dt)
 	camera.x = math.min(math.max(camera.x, 0), worldSize.x - gsx)
 	camera.y = math.min(math.max(camera.y, 0), worldSize.y - gsy)
 
-	lightWorld:setTranslation(-camera.x, -camera.y, 1)
-	lightWorld:update(dt)
-	shaders.mapLighting:send('camPos', {camera.x, camera.y})
+	lighting.update(dt)
 
 	collectgarbage()
 end
@@ -129,32 +116,7 @@ function love.draw()
 			love.graphics.rectangle('fill', 0, 0, worldSize.x, worldSize.y)
 		end)
 		camera:unset()
-		love.graphics.setColor(255, 255, 255)
-		love.graphics.setCanvas(canvases.lightMap)
-		--love.graphics.setShader(shaders.max)
-		--shaders.max:send('other', love.graphics.newImage(lightWorld.shadow_buffer:newImageData()))
-		--love.graphics.draw(gfx.sunLightMap, -camera.x, -camera.y)
-		love.graphics.draw(lightWorld.shadow_buffer, 0, 0)
-		love.graphics.setShader()
-		love.graphics.setCanvas(canvases.lightMapBlur_l8)
-		love.graphics.draw(canvases.lightMap, 0, 0, 0, 1/8, 1/8)
-		love.graphics.setShader(shaders.blur)
-		shaders.blur:send('radius', 1)
-		shaders.blur:send('dir', {1, 0})
-		love.graphics.draw(love.graphics.newImage(canvases.lightMapBlur_l8:newImageData()), 0, 0)
-		shaders.blur:send('dir', {0, 1})
-		love.graphics.draw(love.graphics.newImage(canvases.lightMapBlur_l8:newImageData()), 0, 0)
-		love.graphics.setShader()
-		love.graphics.setCanvas(canvases.lightMapBlur)
-		love.graphics.draw(canvases.lightMapBlur_l8, 0, 0, 0, 8, 8)
-		shaders.mapLighting:send('lightMap', love.graphics.newImage(canvases.lightMap:newImageData()))
-		shaders.mapLighting:send('lightMapBlur', love.graphics.newImage(canvases.lightMapBlur:newImageData()))
-		love.graphics.setCanvas(canvases.game)
-		love.graphics.setShader(shaders.mapLighting)
-		love.graphics.draw(love.graphics.newImage(canvases.game:newImageData()), 0, 0)
-		love.graphics.setShader()
-		love.graphics.setColor(255, 255, 255, 200)
-		love.graphics.draw(gfx.sunLightMap, -camera.x, -camera.y)
+		lighting.draw()
 		hud.draw()
 	end
 	love.graphics.setCanvas()
