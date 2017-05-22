@@ -60,7 +60,7 @@ function menu.mousepressed(x, y, btn)
 		if (v.type ~= 'static' and v.type ~= 'slider') and mx > v.x and mx < v.x+v.img:getWidth() and my > v.y and my < v.y+v.img:getHeight() then
 			if v.id == 'play' then
 				gamestate = 'playing'
-				music.home:stop()
+				music.strategy:stop()
 				music.rhymull:play()
 				sfx.select:clone():play()
 			elseif v.id == 'options' then

@@ -20,6 +20,9 @@ player = {
 		dist = 0,
 		fixture = nil,
 		x = 0, y = 0
+	},
+	inventory = {
+		selected = 1
 	}
 }
 
@@ -177,6 +180,11 @@ function player.mousepressed(x, y, btn)
 	end
 end
 
+function player.wheelmoved(x, y)
+	y = y < 0 and -1 or 1
+	player.inventory.selected = (player.inventory.selected - 1 - y)%3 + 1
+end
+
 function grappleCallback(fixture, x, y, xn, yn, fraction)
 	if type(fixture:getUserData()) == 'table' and fixture:getUserData().type == 'tile' then
 		if fraction < player.grapple.dist or not player.grapple.found then
@@ -200,16 +208,28 @@ function player.keypressed(k, scancode, isrepeat)
 		elseif not player.jumped then
 			player.jump()
 		end
+	elseif k == '1' then
+		player.inventory.selected = 1
+	elseif k == '2' then
+		player.inventory.selected = 2
+	elseif k == '3' then
+		player.inventory.selected = 3
 	end
 end
 
 function player.draw()
 	love.graphics.setColor(255, 255, 255)
 	if player.anim.state == 'walk' then
-		local quad = anim.player.walk.quads[player.anim.frame]
-		local _, _, w, h = quad:getViewport()
-		love.graphics.draw(gfx.player.walkSheet, quad, player.getX(), player.getY(),
-							0, player.direction, 1, math.floor(w/2), math.floor(h/2))
+		if player.inventory.selected == 2 then
+			local quad = anim.player.walkStaff.quads[player.anim.frame]
+			love.graphics.draw(gfx.player.walkStaffSheet, quad, player.getX(), player.getY(),
+								0, player.direction, 1, 11, 16)
+		else
+			local quad = anim.player.walk.quads[player.anim.frame]
+			local _, _, w, h = quad:getViewport()
+			love.graphics.draw(gfx.player.walkSheet, quad, player.getX(), player.getY(),
+								0, player.direction, 1, math.floor(w/2), math.floor(h/2))
+		end
 	elseif player.anim.state == 'jump' then
 		local quad = anim.player.jump.quads[player.anim.frame]
 		local _, _, w, h = quad:getViewport()

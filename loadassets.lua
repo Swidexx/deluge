@@ -28,7 +28,13 @@ gfx = {
 	},
 	player = {
 		walkSheet = love.graphics.newImage('gfx/player/walk.png'),
+		walkStaffSheet = love.graphics.newImage('gfx/player/Rogue3Walk-rootstaff.png'),
+		attackStaffSheet = love.graphics.newImage('gfx/player/Rogue3Attack-rootstaff.png'),
 		jumpSheet = love.graphics.newImage('gfx/player/jump.png')
+	},
+	enviro = {
+		tileSheet = love.graphics.newImage('gfx/enviro/tilesheet.png'),
+		background = love.graphics.newImage('gfx/enviro/background.png')
 	},
 	hud = {
 		health1 = love.graphics.newImage('gfx/hud/health/skin1/1.png'),
@@ -39,7 +45,8 @@ gfx = {
 		inventory = love.graphics.newImage('gfx/hud/inV1.png')
 	},
 	items = {
-		radiantStaff = love.graphics.newImage('gfx/items/radiantStaff.png')
+		radiantStaff = love.graphics.newImage('gfx/items/radiantStaff.png'),
+		gun = love.graphics.newImage('gfx/items/gun.png')
 	},
 	objects = {
 		stoneChest = love.graphics.newImage('gfx/objects/stoneChest.png'),
@@ -60,12 +67,14 @@ recSetFilter(gfx)
 love.graphics.setDefaultFilter('nearest', 'nearest')
 love.graphics.setLineStyle('rough')
 
---love.mouse.setCursor(love.mouse.newCursor(love.image.newImageData('gfx/cursors/defpix2.png'), 0, 0))
-
 anim = {
 	player = {
 		walk = {
 			sheet = gfx.player.walkSheet,
+			quads = {}
+		},
+		walkStaff = {
+			sheet = gfx.player.walkStaffSheet,
 			quads = {}
 		},
 		jump = {
@@ -86,6 +95,12 @@ for i=1, 16 do
 	local y = 0
 	table.insert(anim.player.walk.quads, love.graphics.newQuad(x, y, 19, 33,
 					gfx.player.walkSheet:getWidth(), gfx.player.walkSheet:getHeight()))
+end
+for i=1, 16 do
+	local x = (i-1)*35
+	local y = 0
+	table.insert(anim.player.walkStaff.quads, love.graphics.newQuad(x, y, 34, 33,
+					gfx.player.walkStaffSheet:getWidth(), gfx.player.walkStaffSheet:getHeight()))
 end
 for i=1, 8 do
 	local x = (i-1)*20
@@ -120,6 +135,7 @@ sfx = {
 
 music = {
 	home = love.audio.newSource('music/home.ogg', 'stream'),
+	strategy = love.audio.newSource('music/strategy.ogg', 'stream'),
 	rhymull = love.audio.newSource('music/Rhymull.ogg', 'stream')
 }
 

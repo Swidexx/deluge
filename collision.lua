@@ -99,9 +99,6 @@ love.graphics.setColor(255, 255, 255)
 love.graphics.rectangle('fill', 0, 0, worldSize.x, worldSize.y)
 love.graphics.setCanvas(sunCanv)
 love.graphics.rectangle('fill', 0, 0, worldSize.x, worldSize.y)
-local tileImage = love.graphics.newImage('map/tilesheet.png')
-tileImage:setFilter('nearest', 'nearest')
-gfx.tileImage = tileImage
 local quads = {}
 local tileset = tileMap.tilesets[1]
 for y=0, tileset.imageheight-1, tileset.tileheight do
@@ -126,7 +123,7 @@ for _, layer in ipairs(tileMap.layers) do
 				love.graphics.rectangle('fill', x*tileMap.tilewidth, y*tileMap.tileheight, tileMap.tilewidth, tileMap.tileheight)
 				love.graphics.setCanvas(mapCanv)
 				love.graphics.setColor(255, 255, 255)
-				love.graphics.draw(tileImage, quads[layer.data[idx]], x*tileMap.tilewidth, y*tileMap.tileheight)
+				love.graphics.draw(gfx.enviro.tileSheet, quads[layer.data[idx]], x*tileMap.tilewidth, y*tileMap.tileheight)
 			end
 		end
 	end

@@ -61,7 +61,7 @@ end
 function love.mousepressed(x, y, btn, isTouch)
 	if gamestate == 'splash' then
 		sfx.techemonic:stop()
-		music.home:play()
+		music.strategy:play()
 		gamestate = 'menu'
 	elseif gamestate == 'menu' then
 		menu.mousepressed(x, y, btn)
@@ -76,13 +76,19 @@ function love.mousereleased(x, y, btn, isTouch)
 	end
 end
 
+function love.wheelmoved(x, y)
+	if gamestate == 'playing' then
+		player.wheelmoved(x, y)
+	end
+end
+
 function love.keypressed(k, scancode, isrepeat)
 	if gamestate == 'playing' then
 		player.keypressed(k, scancode, isrepeat)
 		if k == 'escape' then
 			gamestate = 'menu'
 			music.rhymull:stop()
-			music.home:play()
+			music.strategy:play()
 		end
 	elseif gamestate == 'menu' then
 		menu.keypressed(k)
@@ -98,7 +104,7 @@ function love.draw()
 		love.graphics.setShader()
 		if time > 5 then
 			gamestate = 'menu'
-			music.home:play()
+			music.strategy:play()
 		end
 	elseif gamestate == 'menu' then
 		menu.draw()
