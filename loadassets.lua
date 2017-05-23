@@ -77,6 +77,10 @@ anim = {
 			sheet = gfx.player.walkStaffSheet,
 			quads = {}
 		},
+		attackStaff = {
+			sheet = gfx.player.attackStaffSheet,
+			quads = {}
+		},
 		jump = {
 			sheet = gfx.player.jumpSheet,
 			quads = {}
@@ -101,6 +105,12 @@ for i=1, 16 do
 	local y = 0
 	table.insert(anim.player.walkStaff.quads, love.graphics.newQuad(x, y, 34, 33,
 					gfx.player.walkStaffSheet:getWidth(), gfx.player.walkStaffSheet:getHeight()))
+end
+for i=1, 7 do
+	local x = (i-1)*39
+	local y = 0
+	table.insert(anim.player.attackStaff.quads, love.graphics.newQuad(x, y, 38, 31,
+					gfx.player.attackStaffSheet:getWidth(), gfx.player.attackStaffSheet:getHeight()))
 end
 for i=1, 8 do
 	local x = (i-1)*20

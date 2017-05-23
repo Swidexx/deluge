@@ -111,6 +111,8 @@ function love.draw()
 	elseif gamestate == 'playing' then
 		love.graphics.setColor(170, 200, 255)
 		love.graphics.rectangle('fill', -1, -1, gsx+2, gsy+2)
+		love.graphics.setColor(255, 255, 255)
+		love.graphics.draw(gfx.enviro.background, 0, 0)
 		camera:set()
 		world.draw()
 		enemies.draw()
