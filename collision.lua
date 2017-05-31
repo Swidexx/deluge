@@ -24,9 +24,6 @@ function postSolve(a, b, coll, normalImpulse, tangentImpulse)
 
 end
 
-tileMap = require 'map/DelugeConcept2-newtiles'
-worldSize = {x=tileMap.width*tileMap.tilewidth, y=tileMap.height*tileMap.tileheight}
-
 love.physics.setMeter(24)
 physWorld = love.physics.newWorld(0, 800, true)
 physWorld:setCallbacks(beginContact, endContact, preSolve, postSolve)
@@ -80,17 +77,6 @@ for _, v in pairs(objects.worldEdges) do
 	v.fixture:setUserData{type='wall'}
 end
 
-function addPhysTile(x, y, w, h)
-	local t = {
-		body = love.physics.newBody(physWorld, x, y, 'static'),
-		shape = love.physics.newRectangleShape(w, h)
-	}
-	t.fixture = love.physics.newFixture(t.body, t.shape, 1)
-	t.fixture:setUserData{type='tile'}
-	table.insert(objects.tiles, t)
-	lightWorld:newRectangle(x, y, w, h)
-end
-
 local mapCanv = love.graphics.newCanvas(worldSize.x, worldSize.y)
 local airCanv = love.graphics.newCanvas(worldSize.x, worldSize.y)
 local sunCanv = love.graphics.newCanvas(worldSize.x, worldSize.y)
@@ -137,9 +123,8 @@ gfx.sunLightMap:setFilter('nearest', 'nearest')
 shaders.mapLighting:send('airMask', gfx.airMask)
 shaders.mapLighting:send('scale', {gsx/worldSize.x, gsy/worldSize.y})
 shaders.mapLighting:send('mapSize', {worldSize.x, worldSize.y})
+shaders.addSun:send('airMask', gfx.airMask)
 shaders.addSun:send('sunLightMap', gfx.sunLightMap)
-shaders.addSun:send('scale', {gsx/worldSize.x, gsy/worldSize.y})
-shaders.addSun:send('mapSize', {worldSize.x, worldSize.y})
 love.graphics.setCanvas()
 mapCanv = nil
 airCanv = nil
@@ -157,7 +142,6 @@ for x=0, tileMap.width-1 do
 			end
 			if not enclosed then
 				physEdgeTiles[x .. ',' .. y] = true
-				--addPhysTileRect(x*tileMap.tilewidth + tileMap.tilewidth/2, y*tileMap.tileheight + tileMap.tilewidth/2, tileMap.tilewidth, tileMap.tileheight)
 			end
 		end
 	end
@@ -192,6 +176,18 @@ while more do
 		end
 	end
 end
+
+function addPhysTile(x, y, w, h)
+	local t = {
+		body = love.physics.newBody(physWorld, x, y, 'static'),
+		shape = love.physics.newRectangleShape(w, h)
+	}
+	t.fixture = love.physics.newFixture(t.body, t.shape, 1)
+	t.fixture:setUserData{type='tile'}
+	table.insert(objects.tiles, t)
+	lightWorld:newRectangle(x, y, w, h)
+end
+
 for _, v in pairs(physHorizTables) do
 	local start = v[1].x
 	local fin = v[#v].x
@@ -232,20 +228,4 @@ for _, v in pairs(physVertTables) do
 				tileMap.tilewidth, (fin - start)*tileMap.tileheight)
 end
 
---do sunLight
---[[
---max size is screen?
-lightWorld:refreshScreenSize(worldSize.x, worldSize.y)
-sunLight = lightWorld:newLight(worldSize.x, worldSize.y/2, 255, 255, 255, 100000)
-local sunLightCanvas = love.graphics.newCanvas(worldSize.x, worldSize.y)
-love.graphics.setCanvas(sunLightCanvas)
-lightWorld:draw(function()
-	love.graphics.setCanvas(sunLightCanvas)
-	love.graphics.setColor(255, 255, 255)
-	love.graphics.rectangle('fill', 0, 0, worldSize.x, worldSize.y)
-end)
-gfx.sunLightMap = love.graphics.newImage(lightWorld.shadow_buffer:newImageData())
-lightWorld.shadow_buffer:newImageData():encode('png', 'sun_shadow_buffer.png')
-sunLightCanvas = nil
---lightWorld:remove(sunLight)
-]]
+lighting.bake()

@@ -8,6 +8,8 @@ time = 0
 love.filesystem.setIdentity(love.window.getTitle())
 math.randomseed(love.timer.getTime())
 
+devmode = false
+
 gfx = {
 	techemonic = love.graphics.newImage('gfx/techemonic.png'),
 	menu = {
@@ -51,7 +53,8 @@ gfx = {
 	objects = {
 		stoneChest = love.graphics.newImage('gfx/objects/stoneChest.png'),
 		chestSheet = love.graphics.newImage('gfx/objects/chest-Sheet.png')
-	}
+	},
+	torch = love.graphics.newImage('gfx/torch.png')
 }
 
 function recSetFilter(e)
@@ -175,23 +178,9 @@ end
 canvases = {
 	game = love.graphics.newCanvas(gsx, gsy),
 	lightWorld = love.graphics.newCanvas(gsx, gsy),
-	lightMap = love.graphics.newCanvas(gsx, gsy),
-	lightMapBlur = love.graphics.newCanvas(gsx, gsy),
-	lightMapBlur_l6 = love.graphics.newCanvas(math.floor(gsx/6), math.floor(gsy/6))
+	bakedLightMap = love.graphics.newCanvas(worldSize.x, worldSize.y),
+	bakedLightMapBlur = love.graphics.newCanvas(worldSize.x, worldSize.y)
 }
 for _, v in pairs(canvases) do
 	v:setFilter('nearest', 'nearest')
 end
-canvases.lightMap:setFilter('linear', 'linear')
-canvases.lightMapBlur:setFilter('linear', 'linear')
-canvases.lightMapBlur_l6:setFilter('linear', 'linear')
-
-local taserCanv = love.graphics.newCanvas(6, 4)
-love.graphics.setCanvas(taserCanv)
-love.graphics.setColor(0, 0, 0)
-love.graphics.rectangle('fill', 0, 0, 6, 4)
-love.graphics.setColor(255, 255, 0)
-love.graphics.setLineWidth(1)
-love.graphics.line(1, 2, 5, 2)
-gfx.taser = love.graphics.newImage(taserCanv:newImageData())
-taserCanv = nil

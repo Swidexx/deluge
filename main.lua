@@ -1,4 +1,7 @@
 
+tileMap = require 'map/DelugeConcept2-newtiles'
+worldSize = {x=tileMap.width*tileMap.tilewidth, y=tileMap.height*tileMap.tileheight}
+
 require 'loadassets'
 require 'lighting'
 require 'collision'
@@ -67,6 +70,7 @@ function love.mousepressed(x, y, btn, isTouch)
 		menu.mousepressed(x, y, btn)
 	elseif gamestate == 'playing' then
 		player.mousepressed(x, y, btn)
+		lighting.mousepressed(x, y, btn)
 	end
 end
 
@@ -85,6 +89,7 @@ end
 function love.keypressed(k, scancode, isrepeat)
 	if gamestate == 'playing' then
 		player.keypressed(k, scancode, isrepeat)
+		lighting.keypressed(k, scancode, isrepeat)
 		if k == 'escape' then
 			gamestate = 'menu'
 			music.rhymull:stop()
