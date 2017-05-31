@@ -20,6 +20,9 @@ player = {
 		dist = 0,
 		fixture = nil,
 		x = 0, y = 0
+	},
+	inventory = {
+		selected = 1
 	}
 }
 
@@ -37,19 +40,19 @@ function player.update(dt)
 		objects.player.body:applyForce(-8*xv, 0)
 	end
 
-	if love.keyboard.isDown('d') and xv < 100 then
-		objects.player.body:applyForce(1e3, 0)
-		player.anim.stopped = false
-		player.anim.direction = 1
-	end
-	if love.keyboard.isDown('a') and xv > -100 then
-		objects.player.body:applyForce(-1e3, 0)
-		player.anim.stopped = false
-		player.anim.direction = 1
-	end
 	player.walking = false
-	if love.keyboard.isDown('d') or love.keyboard.isDown('a') then
-		player.walking = true
+	if player.anim.state ~= 'attack' then
+		if love.keyboard.isDown('d') and xv < 100 then
+			objects.player.body:applyForce(1e3, 0)
+			player.anim.stopped = false
+		end
+		if love.keyboard.isDown('a') and xv > -100 then
+			objects.player.body:applyForce(-1e3, 0)
+			player.anim.stopped = false
+		end
+		if love.keyboard.isDown('d') or love.keyboard.isDown('a') then
+			player.walking = true
+		end
 	end
 
 	if math.abs(xv) > 10 then
@@ -119,6 +122,20 @@ function player.update(dt)
 				player.anim.state = 'walk'
 			end
 		end
+	elseif player.anim.state == 'attack' then
+		if player.inventory.selected == 2 then
+			player.anim.frameTime = player.anim.frameTime + 20*dt
+			player.anim.nextFrame = player.anim.frame + (player.attacked and -1 or 1)
+			if player.anim.nextFrame < 1 then
+				player.anim.state = 'walk'
+				player.anim.frame = 1
+				player.anim.nextFrame = 1
+			end
+		else
+			player.anim.state = 'walk'
+			player.anim.frame = 1
+			player.anim.nextFrame = 1
+		end
 	end
 
 	if player.anim.frameTime > 1 then
@@ -126,6 +143,9 @@ function player.update(dt)
 		player.anim.frame = player.anim.nextFrame
 		if player.anim.state == 'walk' and (player.anim.frame == 9 or player.anim.frame == 16) then
 			sfx.step:clone():play()
+		elseif player.anim.state == 'attack' and player.anim.frame == 8 then
+			player.attacked = true
+			player.anim.frame = 7
 		end
 	end
 end
@@ -156,9 +176,15 @@ function player.mousepressed(x, y, btn)
 	x, y = camera.x + x - player.getX(), camera.y + y - player.getY()
 	local a = math.atan2(x, -y)-math.pi/2
 	if btn == 1 then
-		spawnBullet(player.getX(), player.getY(), a, 1.2e3)
+		if player.inventory.selected == 1 then
+			spawnBullet(player.getX(), player.getY(), a, 1.2e3)
+			sfx.laser:clone():play()
+		elseif player.inventory.selected == 2 then
+			player.anim.state = 'attack'
+			player.anim.frame = 1
+			player.attacked = false
+		end
 		player.direction = x < 0 and -1 or 1
-		sfx.laser:clone():play()
 	elseif btn == 2 then
 		player.grapple.found = false
 		physWorld:rayCast(player.getX(), player.getY(), player.getX() + math.cos(a)*150,
@@ -175,6 +201,11 @@ function player.mousepressed(x, y, btn)
 			sfx.select:clone():play()
 		end
 	end
+end
+
+function player.wheelmoved(x, y)
+	y = y < 0 and -1 or 1
+	player.inventory.selected = (player.inventory.selected - 1 - y)%3 + 1
 end
 
 function grappleCallback(fixture, x, y, xn, yn, fraction)
@@ -200,21 +231,44 @@ function player.keypressed(k, scancode, isrepeat)
 		elseif not player.jumped then
 			player.jump()
 		end
+	elseif k == '1' then
+		player.inventory.selected = 1
+	elseif k == '2' then
+		player.inventory.selected = 2
+	elseif k == '3' then
+		player.inventory.selected = 3
 	end
 end
 
 function player.draw()
 	love.graphics.setColor(255, 255, 255)
 	if player.anim.state == 'walk' then
-		local quad = anim.player.walk.quads[player.anim.frame]
-		local _, _, w, h = quad:getViewport()
-		love.graphics.draw(gfx.player.walkSheet, quad, player.getX(), player.getY(),
-							0, player.direction, 1, math.floor(w/2), math.floor(h/2))
+		if player.inventory.selected == 2 then
+			local quad = anim.player.walkStaff.quads[player.anim.frame]
+			love.graphics.draw(gfx.player.walkStaffSheet, quad, player.getX(), player.getY(),
+								0, player.direction, 1, 11, 16)
+		else
+			local quad = anim.player.walk.quads[player.anim.frame]
+			local _, _, w, h = quad:getViewport()
+			love.graphics.draw(gfx.player.walkSheet, quad, player.getX(), player.getY(),
+								0, player.direction, 1, math.floor(w/2), math.floor(h/2))
+		end
 	elseif player.anim.state == 'jump' then
 		local quad = anim.player.jump.quads[player.anim.frame]
 		local _, _, w, h = quad:getViewport()
 		love.graphics.draw(gfx.player.jumpSheet, quad, player.getX(), player.getY(),
 							0, player.direction, 1, math.floor(w/2), math.floor(h/2))
+	elseif player.anim.state == 'attack' then
+		if player.inventory.selected == 2 then
+			local quad = anim.player.attackStaff.quads[player.anim.frame]
+			love.graphics.draw(gfx.player.attackStaffSheet, quad, player.getX(), player.getY(),
+								0, player.direction, 1, 15, 14)
+		else
+			local quad = anim.player.walk.quads[1]
+			local _, _, w, h = quad:getViewport()
+			love.graphics.draw(gfx.player.walkSheet, quad, player.getX(), player.getY(),
+								0, player.direction, 1, math.floor(w/2), math.floor(h/2))
+		end
 	end
 	if player.grapple.found then
 		love.graphics.setLineWidth(1)

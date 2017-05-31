@@ -1,4 +1,9 @@
+
+tileMap = require 'map/DelugeConcept2-newtiles'
+worldSize = {x=tileMap.width*tileMap.tilewidth, y=tileMap.height*tileMap.tileheight}
+
 require 'loadassets'
+require 'lighting'
 require 'collision'
 require 'camera'
 require 'easing'
@@ -9,9 +14,6 @@ require 'enemies'
 require 'hud'
 require 'player'
 require 'bullets'
-
-love.filesystem.setIdentity(love.window.getTitle())
-math.randomseed(love.timer.getTime())
 
 function love.load()
 	gamestate = 'splash'
@@ -36,6 +38,7 @@ function screen2game(x, y)
 end
 
 function love.update(dt)
+	love.window.setTitle("Deluge (" .. love.timer.getFPS() .. " FPS)")
 	time = time + dt
 	local mx, my = screen2game(love.mouse.getPosition())
 	if gamestate == 'playing' then
@@ -43,6 +46,7 @@ function love.update(dt)
 		world.update(dt)
 		enemies.update(dt)
 		player.update(dt)
+		playerLight:setPosition(player.getX(), player.getY())
 		hud.update(dt)
 	end
 	camera.x = math.floor(player.getX() - gsx/2 + 0.5) +
@@ -52,18 +56,21 @@ function love.update(dt)
 	camera.x = math.min(math.max(camera.x, 0), worldSize.x - gsx)
 	camera.y = math.min(math.max(camera.y, 0), worldSize.y - gsy)
 
+	lighting.update(dt)
+
 	collectgarbage()
 end
 
 function love.mousepressed(x, y, btn, isTouch)
 	if gamestate == 'splash' then
 		sfx.techemonic:stop()
-		music.home:play()
+		music.strategy:play()
 		gamestate = 'menu'
 	elseif gamestate == 'menu' then
 		menu.mousepressed(x, y, btn)
 	elseif gamestate == 'playing' then
 		player.mousepressed(x, y, btn)
+		lighting.mousepressed(x, y, btn)
 	end
 end
 
@@ -73,13 +80,20 @@ function love.mousereleased(x, y, btn, isTouch)
 	end
 end
 
+function love.wheelmoved(x, y)
+	if gamestate == 'playing' then
+		player.wheelmoved(x, y)
+	end
+end
+
 function love.keypressed(k, scancode, isrepeat)
 	if gamestate == 'playing' then
 		player.keypressed(k, scancode, isrepeat)
+		lighting.keypressed(k, scancode, isrepeat)
 		if k == 'escape' then
 			gamestate = 'menu'
 			music.rhymull:stop()
-			music.home:play()
+			music.strategy:play()
 		end
 	elseif gamestate == 'menu' then
 		menu.keypressed(k)
@@ -95,19 +109,27 @@ function love.draw()
 		love.graphics.setShader()
 		if time > 5 then
 			gamestate = 'menu'
-			music.home:play()
+			music.strategy:play()
 		end
 	elseif gamestate == 'menu' then
 		menu.draw()
 	elseif gamestate == 'playing' then
 		love.graphics.setColor(170, 200, 255)
 		love.graphics.rectangle('fill', -1, -1, gsx+2, gsy+2)
+		love.graphics.setColor(255, 255, 255)
+		love.graphics.draw(gfx.enviro.background, 0, 0)
 		camera:set()
 		world.draw()
 		enemies.draw()
 		player.draw()
 		bullets.draw()
+		lightWorld:draw(function()
+			love.graphics.setCanvas(canvases.lightWorld)
+			love.graphics.setColor(255, 255, 255)
+			love.graphics.rectangle('fill', 0, 0, worldSize.x, worldSize.y)
+		end)
 		camera:unset()
+		lighting.draw()
 		hud.draw()
 	end
 	love.graphics.setCanvas()

@@ -44,7 +44,7 @@ menu.addButton{img=gfx.menu.play, id='play', y=140}
 menu.addButton{img=gfx.menu.options, id='options', y=180}
 menu.addButton{img=gfx.menu.exit, id='exit', y=230}
 menu.addButton{state='options', img=gfx.menu.volume, id='volume', type='slider', val=0.7, y=50}
-love.audio.setVolume(0.7)
+love.audio.setVolume(0.07)
 menu.addButton{state='options', img=gfx.menu.sfx, id='sfx', type='slider', val=0.7, width=56, x=gsx/2-30, y=70}
 setSFXVolume(0.7)
 menu.addButton{state='options', img=gfx.menu.music, id='music', type='slider', val=0.7, width=56, x=gsx/2+30, y=70}
@@ -60,7 +60,7 @@ function menu.mousepressed(x, y, btn)
 		if (v.type ~= 'static' and v.type ~= 'slider') and mx > v.x and mx < v.x+v.img:getWidth() and my > v.y and my < v.y+v.img:getHeight() then
 			if v.id == 'play' then
 				gamestate = 'playing'
-				music.home:stop()
+				music.strategy:stop()
 				music.rhymull:play()
 				sfx.select:clone():play()
 			elseif v.id == 'options' then

@@ -5,6 +5,11 @@ gsx = 480
 gsy = 270
 time = 0
 
+love.filesystem.setIdentity(love.window.getTitle())
+math.randomseed(love.timer.getTime())
+
+devmode = false
+
 gfx = {
 	techemonic = love.graphics.newImage('gfx/techemonic.png'),
 	menu = {
@@ -25,7 +30,13 @@ gfx = {
 	},
 	player = {
 		walkSheet = love.graphics.newImage('gfx/player/walk.png'),
+		walkStaffSheet = love.graphics.newImage('gfx/player/Rogue3Walk-rootstaff.png'),
+		attackStaffSheet = love.graphics.newImage('gfx/player/Rogue3Attack-rootstaff.png'),
 		jumpSheet = love.graphics.newImage('gfx/player/jump.png')
+	},
+	enviro = {
+		tileSheet = love.graphics.newImage('gfx/enviro/tilesheet.png'),
+		background = love.graphics.newImage('gfx/enviro/background.png')
 	},
 	hud = {
 		health1 = love.graphics.newImage('gfx/hud/health/skin1/1.png'),
@@ -36,12 +47,14 @@ gfx = {
 		inventory = love.graphics.newImage('gfx/hud/inV1.png')
 	},
 	items = {
-		radiantStaff = love.graphics.newImage('gfx/items/radiantStaff.png')
+		radiantStaff = love.graphics.newImage('gfx/items/radiantStaff.png'),
+		gun = love.graphics.newImage('gfx/items/gun.png')
 	},
 	objects = {
 		stoneChest = love.graphics.newImage('gfx/objects/stoneChest.png'),
 		chestSheet = love.graphics.newImage('gfx/objects/chest-Sheet.png')
-	}
+	},
+	torch = love.graphics.newImage('gfx/torch.png')
 }
 
 function recSetFilter(e)
@@ -57,12 +70,18 @@ recSetFilter(gfx)
 love.graphics.setDefaultFilter('nearest', 'nearest')
 love.graphics.setLineStyle('rough')
 
---love.mouse.setCursor(love.mouse.newCursor(love.image.newImageData('gfx/cursors/defpix2.png'), 0, 0))
-
 anim = {
 	player = {
 		walk = {
 			sheet = gfx.player.walkSheet,
+			quads = {}
+		},
+		walkStaff = {
+			sheet = gfx.player.walkStaffSheet,
+			quads = {}
+		},
+		attackStaff = {
+			sheet = gfx.player.attackStaffSheet,
 			quads = {}
 		},
 		jump = {
@@ -83,6 +102,18 @@ for i=1, 16 do
 	local y = 0
 	table.insert(anim.player.walk.quads, love.graphics.newQuad(x, y, 19, 33,
 					gfx.player.walkSheet:getWidth(), gfx.player.walkSheet:getHeight()))
+end
+for i=1, 16 do
+	local x = (i-1)*35
+	local y = 0
+	table.insert(anim.player.walkStaff.quads, love.graphics.newQuad(x, y, 34, 33,
+					gfx.player.walkStaffSheet:getWidth(), gfx.player.walkStaffSheet:getHeight()))
+end
+for i=1, 7 do
+	local x = (i-1)*39
+	local y = 0
+	table.insert(anim.player.attackStaff.quads, love.graphics.newQuad(x, y, 38, 31,
+					gfx.player.attackStaffSheet:getWidth(), gfx.player.attackStaffSheet:getHeight()))
 end
 for i=1, 8 do
 	local x = (i-1)*20
@@ -117,6 +148,7 @@ sfx = {
 
 music = {
 	home = love.audio.newSource('music/home.ogg', 'stream'),
+	strategy = love.audio.newSource('music/strategy.ogg', 'stream'),
 	rhymull = love.audio.newSource('music/Rhymull.ogg', 'stream')
 }
 
@@ -127,7 +159,11 @@ end
 shaders = {
 	splashScreen = love.graphics.newShader('shaders/splashScreen.glsl'),
 	menubg = love.graphics.newShader('shaders/menubg.glsl'),
-	fontAlias = love.graphics.newShader('shaders/fontAlias.glsl')
+	fontAlias = love.graphics.newShader('shaders/fontAlias.glsl'),
+	gblur = love.graphics.newShader('shaders/gblur.glsl'),
+	blur = love.graphics.newShader('shaders/blur.glsl'),
+	addSun = love.graphics.newShader('shaders/addSun.glsl'),
+	mapLighting = love.graphics.newShader('shaders/mapLighting.glsl')
 }
 
 fonts = {
@@ -140,18 +176,11 @@ for _, v in pairs(fonts) do
 end
 
 canvases = {
-	game = love.graphics.newCanvas(gsx, gsy)
+	game = love.graphics.newCanvas(gsx, gsy),
+	lightWorld = love.graphics.newCanvas(gsx, gsy),
+	bakedLightMap = love.graphics.newCanvas(worldSize.x, worldSize.y),
+	bakedLightMapBlur = love.graphics.newCanvas(worldSize.x, worldSize.y)
 }
 for _, v in pairs(canvases) do
 	v:setFilter('nearest', 'nearest')
 end
-
-local taserCanv = love.graphics.newCanvas(6, 4)
-love.graphics.setCanvas(taserCanv)
-love.graphics.setColor(0, 0, 0)
-love.graphics.rectangle('fill', 0, 0, 6, 4)
-love.graphics.setColor(255, 255, 0)
-love.graphics.setLineWidth(1)
-love.graphics.line(1, 2, 5, 2)
-gfx.taser = love.graphics.newImage(taserCanv:newImageData())
-taserCanv = nil

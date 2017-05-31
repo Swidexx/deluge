@@ -25,6 +25,10 @@ end
 function hud.draw()
 	love.graphics.setColor(255, 255, 255, 200)
 	love.graphics.draw(gfx.hud.inventory, 0, 0)
+	love.graphics.setColor(128, 128, 255, 200)
+	love.graphics.rectangle('fill', 1, 66 + player.inventory.selected*19, 19, 18)
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.draw(hud.face, -3, 4)
+	love.graphics.draw(gfx.items.gun, 10, 66+1*19+9, 0, 1, 1, 8, 8)
+	love.graphics.draw(gfx.items.radiantStaff, 10, 66+2*19+9, 0, 1, 1, 8, 8)
 end

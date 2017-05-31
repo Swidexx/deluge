@@ -24,9 +24,6 @@ function postSolve(a, b, coll, normalImpulse, tangentImpulse)
 
 end
 
-tileMap = require 'map/DelugeConcept2-newtiles'
-worldSize = {x=tileMap.width*tileMap.tilewidth, y=tileMap.height*tileMap.tileheight}
-
 love.physics.setMeter(24)
 physWorld = love.physics.newWorld(0, 800, true)
 physWorld:setCallbacks(beginContact, endContact, preSolve, postSolve)
@@ -80,21 +77,14 @@ for _, v in pairs(objects.worldEdges) do
 	v.fixture:setUserData{type='wall'}
 end
 
-function addPhysTile(x, y, w, h)
-	local t = {
-		body = love.physics.newBody(physWorld, x, y, 'static'),
-		shape = love.physics.newRectangleShape(w, h)
-	}
-	t.fixture = love.physics.newFixture(t.body, t.shape, 1)
-	t.fixture:setUserData{type='tile'}
-	table.insert(objects.tiles, t)
-end
-
 local mapCanv = love.graphics.newCanvas(worldSize.x, worldSize.y)
-love.graphics.setCanvas(mapCanv)
-local tileImage = love.graphics.newImage('map/tilesheet.png')
-tileImage:setFilter('nearest', 'nearest')
-gfx.tileImage = tileImage
+local airCanv = love.graphics.newCanvas(worldSize.x, worldSize.y)
+local sunCanv = love.graphics.newCanvas(worldSize.x, worldSize.y)
+love.graphics.setCanvas(airCanv)
+love.graphics.setColor(255, 255, 255)
+love.graphics.rectangle('fill', 0, 0, worldSize.x, worldSize.y)
+love.graphics.setCanvas(sunCanv)
+love.graphics.rectangle('fill', 0, 0, worldSize.x, worldSize.y)
 local quads = {}
 local tileset = tileMap.tilesets[1]
 for y=0, tileset.imageheight-1, tileset.tileheight do
@@ -103,23 +93,41 @@ for y=0, tileset.imageheight-1, tileset.tileheight do
 	end
 end
 physTiles = {}
-love.graphics.setColor(255, 255, 255)
 for _, layer in ipairs(tileMap.layers) do
 	for y=0, tileMap.height-1 do
 		for x=0, tileMap.width-1 do
 			local idx = y*tileMap.width + x + 1
 			if layer.data[idx] ~= 0 then
-				if layer.name == "main" then
+				if layer.name == 'main' then
 					physTiles[x .. ',' .. y] = true
+					love.graphics.setCanvas(airCanv)
+					love.graphics.setColor(0, 0, 0)
+					love.graphics.rectangle('fill', x*tileMap.tilewidth, y*tileMap.tileheight, tileMap.tilewidth, tileMap.tileheight)
 				end
-				love.graphics.draw(tileImage, quads[layer.data[idx]], x*tileMap.tilewidth, y*tileMap.tileheight)
+				love.graphics.setCanvas(sunCanv)
+				love.graphics.setColor(0, 0, 0)
+				love.graphics.rectangle('fill', x*tileMap.tilewidth, y*tileMap.tileheight, tileMap.tilewidth, tileMap.tileheight)
+				love.graphics.setCanvas(mapCanv)
+				love.graphics.setColor(255, 255, 255)
+				love.graphics.draw(gfx.enviro.tileSheet, quads[layer.data[idx]], x*tileMap.tilewidth, y*tileMap.tileheight)
 			end
 		end
 	end
 end
 gfx.map = love.graphics.newImage(mapCanv:newImageData())
 gfx.map:setFilter('nearest', 'nearest')
+gfx.airMask = love.graphics.newImage(airCanv:newImageData())
+gfx.airMask:setFilter('nearest', 'nearest')
+gfx.sunLightMap = love.graphics.newImage(sunCanv:newImageData())
+gfx.sunLightMap:setFilter('nearest', 'nearest')
+shaders.mapLighting:send('airMask', gfx.airMask)
+shaders.mapLighting:send('scale', {gsx/worldSize.x, gsy/worldSize.y})
+shaders.mapLighting:send('mapSize', {worldSize.x, worldSize.y})
+shaders.addSun:send('airMask', gfx.airMask)
+shaders.addSun:send('sunLightMap', gfx.sunLightMap)
+love.graphics.setCanvas()
 mapCanv = nil
+airCanv = nil
 physEdgeTiles = {}
 for x=0, tileMap.width-1 do
 	for y=0, tileMap.height-1 do
@@ -127,15 +135,13 @@ for x=0, tileMap.width-1 do
 			local enclosed = true
 			for ox=-1, 1 do
 				for oy=-1, 1 do
-					if x+ox > 0 and x+ox < tileMap.width and
-					y+oy > 0 and y+oy < tileMap.height and not physTiles[x+ox..','..y+oy] then
+					if not physTiles[x+ox..','..y+oy] then
 						enclosed = false
 					end
 				end
 			end
 			if not enclosed then
 				physEdgeTiles[x .. ',' .. y] = true
-				--addPhysTileRect(x*tileMap.tilewidth + tileMap.tilewidth/2, y*tileMap.tileheight + tileMap.tilewidth/2, tileMap.tilewidth, tileMap.tileheight)
 			end
 		end
 	end
@@ -170,6 +176,18 @@ while more do
 		end
 	end
 end
+
+function addPhysTile(x, y, w, h)
+	local t = {
+		body = love.physics.newBody(physWorld, x, y, 'static'),
+		shape = love.physics.newRectangleShape(w, h)
+	}
+	t.fixture = love.physics.newFixture(t.body, t.shape, 1)
+	t.fixture:setUserData{type='tile'}
+	table.insert(objects.tiles, t)
+	lightWorld:newRectangle(x, y, w, h)
+end
+
 for _, v in pairs(physHorizTables) do
 	local start = v[1].x
 	local fin = v[#v].x
@@ -209,3 +227,5 @@ for _, v in pairs(physVertTables) do
 	addPhysTile(v[1].x*tileMap.tilewidth + tileMap.tilewidth/2, (start + fin)/2*tileMap.tileheight,
 				tileMap.tilewidth, (fin - start)*tileMap.tileheight)
 end
+
+lighting.bake()

@@ -35,8 +35,10 @@ function drawColliders(e)
 			print('unknown shape type')
 		end
     else
-		for _, v in pairs(e) do
-			drawColliders(v)
+		for i, v in pairs(e) do
+			if type(v) == 'table' then
+				drawColliders(v)
+			end
 		end
     end
 end
@@ -44,7 +46,12 @@ end
 function world.draw()
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.draw(gfx.map, 0, 0)
+	for i, v in pairs(bakedLights) do
+		if i > 2 then
+			love.graphics.draw(gfx.torch, v[1], v[2], 0, 1, 1, gfx.torch:getWidth()/2, gfx.torch:getHeight()/2)
+		end
+	end
 	love.graphics.draw(gfx.objects.chestSheet, anim.objects.chest.quads[math.floor(chestState)], 1488, 1120, 0, 1, 1, 16, 32)
-
+	love.graphics.setColor(255, 255, 255)
 	--drawColliders()
 end
