@@ -166,6 +166,15 @@ shaders = {
 	mapLighting = love.graphics.newShader('shaders/mapLighting.glsl')
 }
 
+shaderDefaults = {}
+function setShaderDefaults()
+	for shader, defaults in pairs(shaderDefaults) do
+		for name, value in pairs(defaults) do
+			shader:send(name, value)
+		end
+	end
+end
+
 fonts = {
 	f8 = love.graphics.newFont(8),
 	f18 = love.graphics.newFont(18),
@@ -177,7 +186,7 @@ end
 
 canvases = {
 	game = love.graphics.newCanvas(gsx, gsy),
-	lightWorld = love.graphics.newCanvas(gsx, gsy),
+	lightWorldTemp = love.graphics.newCanvas(gsx, gsy),
 	bakedLightMap = love.graphics.newCanvas(worldSize.x, worldSize.y),
 	bakedLightMapBlur = love.graphics.newCanvas(worldSize.x, worldSize.y)
 }
