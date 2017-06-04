@@ -82,7 +82,7 @@ function menu.mousepressed(x, y, btn)
 				local w, h = gsx*(v.val+1), gsy*(v.val+1)
 				love.window.setMode(w, h, flags)
 				love.resize(w, h)
-				setShaderDefaults()
+				sendShaderDefaults()
 				sfx.select:clone():play()
 			end
 			break

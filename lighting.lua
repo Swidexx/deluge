@@ -61,7 +61,7 @@ function lighting.bake()
 	local defaults = shaderDefaults[shaders.mapLighting]
 	defaults['bakedLightMap'] = love.graphics.newImage(canvases.bakedLightMap:newImageData())
 	defaults['bakedLightMapBlur'] = love.graphics.newImage(canvases.bakedLightMapBlur:newImageData())
-	setShaderDefaults()
+	sendShaderDefaults()
 	for _, v in pairs(tempLights) do
 		lightWorld:remove(v)
 	end

@@ -120,16 +120,16 @@ gfx.airMask = love.graphics.newImage(airCanv:newImageData())
 gfx.airMask:setFilter('nearest', 'nearest')
 gfx.sunLightMap = love.graphics.newImage(sunCanv:newImageData())
 gfx.sunLightMap:setFilter('nearest', 'nearest')
-shaderDefaults[shaders.mapLighting] = {}
-local defaults = shaderDefaults[shaders.mapLighting]
-defaults['airMask'] = gfx.airMask
-defaults ['viewScale'] = {gsx/worldSize.x, gsy/worldSize.y}
-defaults['mapSize'] = {worldSize.x, worldSize.y}
-shaderDefaults[shaders.addSun] = {}
-defaults = shaderDefaults[shaders.addSun]
-defaults['airMask'] = gfx.airMask
-defaults['sunLightMap'] = gfx.sunLightMap
-setShaderDefaults()
+setShaderDefaults(shaders.mapLighting, {
+	['airMask'] = gfx.airMask,
+	['viewScale'] = {gsx/worldSize.x, gsy/worldSize.y},
+	['mapSize'] = {worldSize.x, worldSize.y}
+})
+setShaderDefaults(shaders.addSun, {
+	['airMask'] = gfx.airMask,
+	['sunLightMap'] = gfx.sunLightMap
+})
+sendShaderDefaults()
 love.graphics.setCanvas()
 mapCanv = nil
 airCanv = nil
