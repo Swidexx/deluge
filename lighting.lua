@@ -57,8 +57,11 @@ function lighting.bake()
 	shaders.blur:send('dir', {1, 0})
 	love.graphics.setCanvas(canvases.bakedLightMapBlur)
 	love.graphics.draw(tempCanv, 0, 0)
-	shaders.mapLighting:send('bakedLightMap', love.graphics.newImage(canvases.bakedLightMap:newImageData()))
-	shaders.mapLighting:send('bakedLightMapBlur', love.graphics.newImage(canvases.bakedLightMapBlur:newImageData()))
+	shaderDefaults[shaders.mapLighting] = shaderDefaults[shaders.mapLighting] or {}
+	local defaults = shaderDefaults[shaders.mapLighting]
+	defaults['bakedLightMap'] = love.graphics.newImage(canvases.bakedLightMap:newImageData())
+	defaults['bakedLightMapBlur'] = love.graphics.newImage(canvases.bakedLightMapBlur:newImageData())
+	setShaderDefaults()
 	for _, v in pairs(tempLights) do
 		lightWorld:remove(v)
 	end
@@ -112,9 +115,12 @@ function lighting.keypressed(k, scancode, isrepeat)
 end
 
 function lighting.draw()
+	love.graphics.setColor(255, 255, 255)
+	love.graphics.setCanvas(canvases.lightWorldTemp)
+	love.graphics.draw(canvases.game, 0, 0)
 	love.graphics.setCanvas(canvases.game)
 	love.graphics.setShader(shaders.mapLighting)
 	shaders.mapLighting:send('lightMap', love.graphics.newImage(lightWorld.shadow_buffer:newImageData()))
-	love.graphics.draw(love.graphics.newImage(canvases.game:newImageData()), 0, 0)
+	love.graphics.draw(canvases.lightWorldTemp, 0, 0)
 	love.graphics.setShader()
 end
