@@ -167,7 +167,14 @@ shaders = {
 }
 
 shaderDefaults = {}
-function setShaderDefaults()
+function setShaderDefaults(shader, values)
+	shaderDefaults[shader] = shaderDefaults[shader] or {}
+	local defaults = shaderDefaults[shader]
+	for name, value in pairs(values) do
+		defaults[name] = value
+	end
+end
+function sendShaderDefaults()
 	for shader, defaults in pairs(shaderDefaults) do
 		for name, value in pairs(defaults) do
 			shader:send(name, value)
