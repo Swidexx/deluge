@@ -130,6 +130,9 @@ function menu.mousepressed(x, y, btn)
 				if mx > v.x and mx < v.x+v.font:getWidth(v.text) and my > v.y and my < v.y+v.font:getHeight(v.text) then
 					if v.id == 'host' then
 						gamestate = 'playing'
+						local ip, port = menu.ipInput.val:match('(.-):(.*)')
+						server.start(port or '1357')
+						client.connect('127.0.0.1', port or '1357')
 						music.strategy:stop()
 						music.rhymull:play()
 						sfx.select:clone():play()
@@ -138,6 +141,8 @@ function menu.mousepressed(x, y, btn)
 						love.filesystem.write('menuDefaults.lua', str)
 					elseif v.id == 'connect' then
 						gamestate = 'playing'
+						local ip, port = menu.ipInput.val:match('(.-):(.*)')
+						client.connect(ip, port or '1357')
 						music.strategy:stop()
 						music.rhymull:play()
 						sfx.select:clone():play()

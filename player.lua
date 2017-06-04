@@ -41,7 +41,7 @@ function player.update(dt)
 	end
 
 	player.walking = false
-	if player.anim.state ~= 'attack' then
+	if player.anim.state ~= 'attack' and not chat.typing then
 		if love.keyboard.isDown('d') and xv < 100 then
 			objects.player.body:applyForce(1e3, 0)
 			player.anim.stopped = false
@@ -223,7 +223,7 @@ end
 
 function player.keypressed(k, scancode, isrepeat)
 	local xv, yv = objects.player.body:getLinearVelocity()
-	if not isrepeat then
+	if not isrepeat and not chat.typing then
 		if k == 'space' then
 			if player.inAir and objects.player.grappleJoint then
 				objects.player.grappleJoint:destroy()

@@ -3,6 +3,10 @@ tileMap = require 'map/DelugeConcept2-newtiles'
 worldSize = {x=tileMap.width*tileMap.tilewidth, y=tileMap.height*tileMap.tileheight}
 
 require 'loadassets'
+require 'socket'
+require 'server'
+require 'client'
+require 'chat'
 require 'lighting'
 require 'collision'
 require 'camera'
@@ -40,6 +44,12 @@ end
 function love.update(dt)
 	love.window.setTitle("Deluge (" .. love.timer.getFPS() .. " FPS)")
 	time = time + dt
+	if hosting then
+		server.update(dt)
+	end
+	if client.udp then
+		client.receive()
+	end
 	local mx, my = screen2game(love.mouse.getPosition())
 	if gamestate == 'playing' then
 		bullets.update(dt)
@@ -90,7 +100,7 @@ function love.textinput(t)
 	if gamestate == 'menu' then
 		menu.textinput(t)
 	elseif gamestate == 'playing' then
-
+		chat.textinput(t)
 	end
 end
 
@@ -99,6 +109,7 @@ function love.keypressed(k, scancode, isrepeat)
 		menu.keypressed(k, scancode, isrepeat)
 	elseif gamestate == 'playing' then
 		player.keypressed(k, scancode, isrepeat)
+		chat.keypressed(k, scancode, isrepeat)
 		lighting.keypressed(k, scancode, isrepeat)
 		if k == 'escape' then
 			gamestate = 'menu'
@@ -141,6 +152,7 @@ function love.draw()
 		camera:unset()
 		lighting.draw()
 		hud.draw()
+		chat.draw()
 	end
 	love.graphics.setCanvas()
 	love.graphics.setBackgroundColor(0, 0, 0)

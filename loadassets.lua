@@ -185,7 +185,8 @@ function sendShaderDefaults()
 end
 
 fonts = {
-	f8 = love.graphics.newFont(8),
+	f10 = love.graphics.newFont(10),
+	f12 = love.graphics.newFont(12),
 	f18 = love.graphics.newFont(18),
 	f24 = love.graphics.newFont(24)
 }
