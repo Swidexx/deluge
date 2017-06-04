@@ -93,7 +93,7 @@ function lighting.mousepressed(x, y, btn)
 end
 
 function lighting.keypressed(k, scancode, isrepeat)
-	if devmode then
+	if devmode and not isrepeat then
 		if k == 'l' then
 			placingLights = not placingLights
 			if placingLights then

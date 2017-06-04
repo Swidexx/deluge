@@ -8,6 +8,8 @@ time = 0
 love.filesystem.setIdentity(love.window.getTitle())
 math.randomseed(love.timer.getTime())
 
+love.keyboard.setKeyRepeat(true)
+
 devmode = false
 
 gfx = {

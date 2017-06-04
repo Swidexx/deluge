@@ -223,20 +223,22 @@ end
 
 function player.keypressed(k, scancode, isrepeat)
 	local xv, yv = objects.player.body:getLinearVelocity()
-	if k == 'space' then
-		if player.inAir and objects.player.grappleJoint then
-			objects.player.grappleJoint:destroy()
-			objects.player.grappleJoint = nil
-			player.jump()
-		elseif not player.jumped then
-			player.jump()
+	if not isrepeat then
+		if k == 'space' then
+			if player.inAir and objects.player.grappleJoint then
+				objects.player.grappleJoint:destroy()
+				objects.player.grappleJoint = nil
+				player.jump()
+			elseif not player.jumped then
+				player.jump()
+			end
+		elseif k == '1' then
+			player.inventory.selected = 1
+		elseif k == '2' then
+			player.inventory.selected = 2
+		elseif k == '3' then
+			player.inventory.selected = 3
 		end
-	elseif k == '1' then
-		player.inventory.selected = 1
-	elseif k == '2' then
-		player.inventory.selected = 2
-	elseif k == '3' then
-		player.inventory.selected = 3
 	end
 end
 

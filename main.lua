@@ -86,8 +86,18 @@ function love.wheelmoved(x, y)
 	end
 end
 
+function love.textinput(t)
+	if gamestate == 'menu' then
+		menu.textinput(t)
+	elseif gamestate == 'playing' then
+
+	end
+end
+
 function love.keypressed(k, scancode, isrepeat)
-	if gamestate == 'playing' then
+	if gamestate == 'menu' then
+		menu.keypressed(k, scancode, isrepeat)
+	elseif gamestate == 'playing' then
 		player.keypressed(k, scancode, isrepeat)
 		lighting.keypressed(k, scancode, isrepeat)
 		if k == 'escape' then
@@ -95,8 +105,6 @@ function love.keypressed(k, scancode, isrepeat)
 			music.rhymull:stop()
 			music.strategy:play()
 		end
-	elseif gamestate == 'menu' then
-		menu.keypressed(k)
 	end
 end
 
