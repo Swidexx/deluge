@@ -21,7 +21,7 @@ function chat.keypressed(k, scancode, isrepeat)
 		chat.typing = not chat.typing
 		chat.lastOpen = time
 		if not chat.typing and chat.message ~= '' then
-			local dg = string.format('%s %s %s', 'chatMsg', player.id, chat.message)
+			local dg = string.format('%s %s', 'chatMsg', chat.message)
 			client.udp:send(dg)
 			chat.message = ''
 		end
@@ -45,10 +45,13 @@ function chat.draw()
 	love.graphics.setShader(shaders.fontAlias)
 	love.graphics.setFont(fonts.f10)
 	if chat.typing or time - chat.lastOpen < 6 then
-		love.graphics.setColor(0, 128, 192, math.min(6-(time-chat.lastOpen), 1)*255)
 		local pos = 1
 		for i=math.max(#client.chatLog-7, 1), #client.chatLog do
 			local v = client.chatLog[i]
+			love.graphics.setColor(0, 128, 192, math.min(6-(time-chat.lastOpen), 1)*255)
+			if v.id == 'Server' then
+				love.graphics.setColor(0, 192, 128, math.min(6-(time-chat.lastOpen), 1)*255)
+			end
 			love.graphics.print(v.id .. ': ' .. v.msg, 2, 140 + pos*12)
 			pos = pos + 1
 		end

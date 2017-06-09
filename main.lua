@@ -2,6 +2,7 @@
 tileMap = require 'map/DelugeConcept2-newtiles'
 worldSize = {x=tileMap.width*tileMap.tilewidth, y=tileMap.height*tileMap.tileheight}
 
+json = require 'json'
 require 'loadassets'
 require 'socket'
 require 'server'
@@ -44,7 +45,7 @@ end
 function love.update(dt)
 	love.window.setTitle("Deluge (" .. love.timer.getFPS() .. " FPS)")
 	time = time + dt
-	if hosting then
+	if server.udp then
 		server.update(dt)
 	end
 	if client.udp then
@@ -172,4 +173,16 @@ function love.draw()
 	love.graphics.setBackgroundColor(0, 0, 0)
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.draw(canvases.game, ssx/2-gameScale*gsx/2, ssy/2-gameScale*gsy/2, 0, gameScale, gameScale)
+end
+
+function love.quit()
+	if client.udp then
+		client.udp:send('removePlayer $')
+	end
+	if server.udp then
+		dg = string.format('%s %s %s', 'chatMsg', 'Server', 'closed')
+		for k, v in pairs(server.players) do
+			server.udp:sendto(dg, v.connection.ip, v.connection.port)
+		end
+	end
 end
