@@ -3,8 +3,9 @@ tileMap = require 'map/DelugeConcept2-newtiles'
 worldSize = {x=tileMap.width*tileMap.tilewidth, y=tileMap.height*tileMap.tileheight}
 
 json = require 'json'
-require 'loadassets'
 require 'socket'
+require 'utils'
+require 'loadassets'
 require 'server'
 require 'client'
 require 'chat'
@@ -142,20 +143,7 @@ function love.draw()
 		camera:set()
 		world.draw()
 		enemies.draw()
-		for k, v in pairs(client.players) do
-			if k ~= player.id then
-				love.graphics.setColor(255, 255, 255)
-				local quad = anim.player.walk.quads[1]
-				local _, _, w, h = quad:getViewport()
-				love.graphics.draw(gfx.player.walkSheet, quad, v.x, v.y,
-									0, 1, 1, math.floor(w/2), math.floor(h/2))
-			end
-			love.graphics.setShader(shaders.fontAlias)
-			love.graphics.setColor(0, 0, 0)
-			love.graphics.setFont(fonts.f12)
-			love.graphics.print(k, math.floor(v.x-fonts.f12:getWidth(k)/2), math.floor(v.y-30))
-			love.graphics.setShader()
-		end
+		client.drawPlayers()
 		player.draw()
 		bullets.draw()
 		lightWorld:draw(function()
@@ -168,6 +156,7 @@ function love.draw()
 		lighting.draw()
 		hud.draw()
 		chat.draw()
+		debug.draw()
 	end
 	love.graphics.setCanvas()
 	love.graphics.setBackgroundColor(0, 0, 0)

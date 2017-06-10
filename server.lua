@@ -2,7 +2,7 @@
 server = {}
 
 function server.start(port)
-	print('Starting server on port ' .. port)
+	debug.log('Starting server on port ' .. port)
 	server.udp = socket.udp()
 	server.udp:settimeout(0)
 	server.udp:setsockname('*', port)
@@ -10,20 +10,33 @@ function server.start(port)
 	server.players = {}
 	server.ip2id = {}
 	server.lastUpdate = 0
-	server.updateRate = 1/30
-end
-
-function buildID(name, postfix)
-	return name .. (postfix ~= 0 and '(' .. postfix .. ')' or '')
+	server.updateRate = 1/20
 end
 
 function server.addPlayer(id, ip, port)
 	server.players[id] = {
-		connection={ip=ip, port=port}, x=1260, y=1000, lastUpdate=time
+		connection={ip=ip, port=port}, x=1260, y=1000, direction=1,
+		grapple = {
+			on=false, x=0, y=0
+		},
+		lastUpdate=time
 	}
+	local p = server.players[id]
 	server.ip2id[ip .. ':' .. port] = id
-	local dg = string.format('%s %s', 'setLocalPlayer', id)
+	server.added = server.added or {}
+	server.added.players = server.added.players or {}
+	server.added.players[id] = {
+		x=p.x, y=p.y, direction=p.direction,
+		grapple={
+			on=p.grapple.on, x=p.grapple.x, y=p.grapple.y
+		}
+	}
+	local dg = string.format('%s %s', 'returnPlayerID', id)
 	server.udp:sendto(dg, ip, port)
+	dg = string.format('%s %s %s', 'chatMsg', 'Server', id .. ' connected')
+	for k, v in pairs(server.players) do
+		server.udp:sendto(dg, ip, port)
+	end
 end
 
 function server.removePlayer(id)
@@ -37,7 +50,7 @@ function server.removePlayer(id)
 	for k, v in pairs(server.players) do
 		server.udp:sendto(dg, v.connection.ip, v.connection.port)
 	end
-	print('removed')
+	debug.log('removed')
 end
 
 function server.update(dt)
@@ -57,10 +70,17 @@ function server.update(dt)
 				end
 				local fullID = buildID(id, postfix)
 				server.addPlayer(fullID, msg_or_ip, port_or_nil)
-				local dg = string.format('%s %s %s', 'chatMsg', 'Server', fullID .. ' connected')
+				local add = {players={}}
 				for k, v in pairs(server.players) do
-					server.udp:sendto(dg, v.connection.ip, v.connection.port)
+					add.players[k] = {
+						x=v.x, y=v.y, direction=v.direction,
+						grapple={
+							on=v.grapple.on, x=v.grapple.x, y=v.grapple.y
+						}
+					}
 				end
+				local dg = string.format('%s %s', 'add', json.encode(add))
+				server.udp:sendto(dg, msg_or_ip, port_or_nil)
 			elseif id then
 				if cmd == 'chatMsg' then
 					local dg = string.format('%s %s %s', 'chatMsg', id, cmdParams)
@@ -68,17 +88,22 @@ function server.update(dt)
 						server.udp:sendto(dg, v.connection.ip, v.connection.port)
 					end
 				elseif cmd == 'setPlayer' then
-					local x, y = cmdParams:match('^(%-?[%d.e]*) (%-?[%d.e]*)$')
-					x, y = tonumber(x), tonumber(y)
-					local pv = server.players[id]
-					pv.x = x
-					pv.y = y
+					local x, y, direction, grappleOn, grappleX, grappleY =
+						cmdParams:match('^(%-?[%d.e]*) (%-?[%d.e]*) (%-?[%d.e]*) (%-?[%d.e]*) (%-?[%d.e]*) (%-?[%d.e]*)$')
+					x, y, direction = tonumber(x), tonumber(y), tonumber(direction)
+					grappleOn = tonumber(grappleOn) == 1 and true or false
+					grappleX, grappleY = tonumber(grappleX), tonumber(grappleY)
+					local p = server.players[id]
+					if p then
+						p.x, p.y, p.direction = x, y, direction
+						p.grapple.on, p.grapple.x, p.grapple.y = grappleOn, grappleX, grappleY
+					end
 				elseif cmd == 'removePlayer' then
 					server.removePlayer(id)
 				end
 			end
 		elseif msg_or_ip ~= 'timeout' then
-			print('Network error: ' .. tostring(msg_or_ip))
+			debug.log('Network error: ' .. tostring(msg_or_ip))
 		end
 	until not data
 	for k, v in pairs(server.players) do
@@ -90,24 +115,31 @@ function server.update(dt)
 		server.lastUpdate = time
 		local stateUpdate = {players={}}
 		for k, v in pairs(server.players) do
-			stateUpdate.players[k] = {x=v.x, y=v.y}
+			stateUpdate.players[k] = {
+				x=v.x, y=v.y, direction=v.direction,
+				grapple={
+					on=v.grapple.on, x=v.grapple.x, y=v.grapple.y
+				}
+			}
 		end
 		local dgStateUpdate = string.format('%s %s', 'stateUpdate', json.encode(stateUpdate))
+		local dgAdd
+		if server.added then
+			dgAdd = string.format('%s %s', 'add', json.encode(server.added))
+			server.added = nil
+		end
 		local dgRemove
 		if server.removed then
 			dgRemove = string.format('%s %s', 'remove', json.encode(server.removed))
 			server.removed = nil
 		end
 		for k, v in pairs(server.players) do
-			local success, error = server.udp:sendto(dgStateUpdate, v.connection.ip, v.connection.port)
-			if not success then
-				print('State update failed: ' .. error)
+			server.udp:sendto(dgStateUpdate, v.connection.ip, v.connection.port)
+			if dgAdd then
+				server.udp:sendto(dgAdd, v.connection.ip, v.connection.port)
 			end
 			if dgRemove then
-				local success, error = server.udp:sendto(dgRemove, v.connection.ip, v.connection.port)
-				if not success then
-					print('Remove update failed: ' .. error)
-				end
+				server.udp:sendto(dgRemove, v.connection.ip, v.connection.port)
 			end
 		end
 	end

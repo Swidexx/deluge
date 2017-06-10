@@ -42,6 +42,10 @@ function chat.keypressed(k, scancode, isrepeat)
 end
 
 function chat.draw()
+	if chat.typing or time - chat.lastOpen < 6 then
+		love.graphics.setColor(0, 0, 0, math.min(6-(time-chat.lastOpen), 1)*96)
+		love.graphics.rectangle('fill', 0, 152, 150, 100)
+	end
 	love.graphics.setShader(shaders.fontAlias)
 	love.graphics.setFont(fonts.f10)
 	if chat.typing or time - chat.lastOpen < 6 then
@@ -57,6 +61,7 @@ function chat.draw()
 		end
 	end
 	if chat.typing then
+		chat.lastOpen = time
 		love.graphics.setColor(0, 0, 0, 128)
 		love.graphics.rectangle('fill', 2, gsy-16, 120, 12)
 		love.graphics.setColor(0, 128, 192)

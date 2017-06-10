@@ -12,7 +12,6 @@ player = {
 	direction = 1,
 	inAir = true,
 	inAirLast = true,
-	jumped = true,
 	walking = false,
 	lastEnemyJump = 0,
 	grapple = {
@@ -35,7 +34,6 @@ end
 function player.update(dt)
 	local xv, yv = objects.player.body:getLinearVelocity()
 
-	--objects.player.body:setLinearVelocity(math.min(math.max(xv, -100), 100), yv)
 	if not player.inAir then
 		objects.player.body:applyForce(-8*xv, 0)
 	end
@@ -84,7 +82,6 @@ function player.update(dt)
 	end
 
 	if player.lastInAir and not player.inAir then
-		player.jumped = false
 		sfx.land:clone():play()
 	end
 
@@ -158,7 +155,6 @@ function player.jump()
 	player.grapple.found = false
 	local xv, yv = objects.player.body:getLinearVelocity()
 	objects.player.body:setLinearVelocity(xv, -2.5e2)
-	player.jumped = true
 	sfx.jump:clone():play()
 end
 
@@ -186,6 +182,10 @@ function player.mousepressed(x, y, btn)
 		end
 		player.direction = x < 0 and -1 or 1
 	elseif btn == 2 then
+		if objects.player.grappleJoint then
+			objects.player.grappleJoint:destroy()
+			objects.player.grappleJoint = nil
+		end
 		player.grapple.found = false
 		physWorld:rayCast(player.getX(), player.getY(), player.getX() + math.cos(a)*150,
 							player.getY() + math.sin(a)*150, grappleCallback)
@@ -225,11 +225,7 @@ function player.keypressed(k, scancode, isrepeat)
 	local xv, yv = objects.player.body:getLinearVelocity()
 	if not isrepeat and not chat.typing then
 		if k == 'space' then
-			if player.inAir and objects.player.grappleJoint then
-				objects.player.grappleJoint:destroy()
-				objects.player.grappleJoint = nil
-				player.jump()
-			elseif not player.jumped then
+			if objects.player.grappleJoint or not player.inAir then
 				player.jump()
 			end
 		elseif k == '1' then
@@ -280,4 +276,9 @@ function player.draw()
 		love.graphics.setColor(0, 0, 0)
 		love.graphics.circle('line', player.grapple.x, player.grapple.y, 3)
 	end
+	love.graphics.setShader(shaders.fontAlias)
+	love.graphics.setColor(0, 0, 0)
+	love.graphics.setFont(fonts.f12)
+	love.graphics.print(player.id or 'Player', player.getX()-math.floor(fonts.f12:getWidth(player.id or 'Player')/2), player.getY()-35)
+	love.graphics.setShader()
 end
