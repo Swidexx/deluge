@@ -2,7 +2,7 @@
 client = {}
 
 function client.connect(ip, port)
-	debug.log('Connecting to server at ' .. ip .. ':' .. port)
+	logger.log('Connecting to server at ' .. ip .. ':' .. port)
 	client.udp = socket.udp()
 	client.udp:settimeout(0)
 	client.udp:setpeername(ip, port)
@@ -24,30 +24,32 @@ function client.update(dt)
 			local cmd, cmdParams = data:match('^(%S*) (.*)$')
 			if cmd == 'returnPlayerID' then
 				local id = cmdParams
-				debug.log('id: ' .. id)
+				logger.log('id: ' .. id)
 				player.id = id
 			elseif cmd == 'chatMsg' then
 				local id, msg = cmdParams:match('^(%S*) (.*)')
 				table.insert(client.chatLog, {id=id, msg=msg})
 				chat.lastOpen = time
 			elseif cmd == 'stateUpdate' then
-				local stateUpdate = json.decode(cmdParams)
-				stateUpdate.time = time
-				table.insert(client.states, stateUpdate)
+				local stateUpdate
+				if pcall(function() stateUpdate = json.decode(cmdParams) end) then
+					stateUpdate.time = time
+					table.insert(client.states, stateUpdate)
+				end
 			elseif cmd == 'add' then
-				local add = json.decode(cmdParams)
-				for k, v in pairs(add.players) do
-					client.currentState.players[k] = {
-						x=v.x, y=v.y, direction=v.direction,
-						grapple={
-							on=v.grapple.on, x=v.grapple.x, y=v.grapple.y
-						}
-					}
+				local add
+				if pcall(function() add = json.decode(cmdParams) end) then
+					for k, v in pairs(add.players) do
+						client.currentState.players[k] = {}
+						setPlayerVals(client.currentState.players[k], v)
+					end
 				end
 			elseif cmd == 'remove' then
-				local remove = json.decode(cmdParams)
-				for k, _ in pairs(remove.players) do
-					client.currentState.players[k] = nil
+				local remove
+				if pcall(function() remove = json.decode(cmdParams) end) then
+					for k, _ in pairs(remove.players) do
+						client.currentState.players[k] = nil
+					end
 				end
 			end
 		end
@@ -57,7 +59,7 @@ function client.update(dt)
 		--client.stateTime = client.stateTime + negGoldSoftplus(1 + timeOffset*2)*dt
 		client.stateTime = client.stateTime + dt
 		client.stateTime = math.min(math.max(client.stateTime, client.states[#client.states-1].time), client.states[#client.states].time)
-		debug.log(time - client.stateTime)
+		logger.logVal('smoothing delay', time - client.stateTime)
 		while client.states[client.stateIdx+1] and client.states[client.stateIdx+2]
 		and client.states[client.stateIdx+1].time < client.stateTime do
 			client.stateIdx = client.stateIdx + 1
@@ -72,9 +74,14 @@ function client.update(dt)
 					p.x = lerp(v.x, v2.x, t)
 					p.y = lerp(v.y, v2.y, t)
 					p.direction = v.direction
-					p.grapple = {
-						on=v.grapple.on, x=v.grapple.x, y=v.grapple.y
+					p.anim = {
+						state = v.anim.state,
+						frame = v.anim.frame
 					}
+					p.grapple = {
+						on = v.grapple.on, x = v.grapple.x, y = v.grapple.y
+					}
+					p.holdingStaff = v.holdingStaff
 				end
 			end
 		end
@@ -82,8 +89,18 @@ function client.update(dt)
 	if time - client.lastUpdate > client.updateRate then
 		client.lastUpdate = time
 		if player.id then
-			local dg = string.format('%s %f %f %f %f %f %f', 'setPlayer', player.getX(), player.getY(), player.direction,
-				player.grapple.found and 1 or 0, player.grapple.x, player.grapple.y)
+			local pClient = {
+				x = player.getX(), y = player.getY(), direction = player.direction,
+				anim = {
+					state = player.anim.state,
+					frame = player.anim.frame
+				},
+				grapple = {
+					on = player.grapple.found, x = player.grapple.x, y = player.grapple.y
+				},
+				holdingStaff = player.inventory.selected == 2
+			}
+			local dg = string.format('%s %s', 'setPlayer', json.encode(pClient))
 			client.udp:send(dg)
 		end
 	end
@@ -93,10 +110,34 @@ function client.drawPlayers()
 	for k, v in pairs(client.currentState.players) do
 		if k ~= player.id then
 			love.graphics.setColor(255, 255, 255)
-			local quad = anim.player.walk.quads[1]
-			local _, _, w, h = quad:getViewport()
-			love.graphics.draw(gfx.player.walkSheet, quad, v.x, v.y,
-								0, v.direction, 1, math.floor(w/2), math.floor(h/2))
+			if v.anim.state == 'walk' then
+				if v.holdingStaff then
+					local quad = anim.player.walkStaff.quads[v.anim.frame]
+					love.graphics.draw(gfx.player.walkStaffSheet, quad, v.x, v.y,
+										0, v.direction, 1, 11, 16)
+				else
+					local quad = anim.player.walk.quads[v.anim.frame]
+					local _, _, w, h = quad:getViewport()
+					love.graphics.draw(gfx.player.walkSheet, quad, v.x, v.y,
+										0, v.direction, 1, math.floor(w/2), math.floor(h/2))
+				end
+			elseif v.anim.state == 'jump' then
+				local quad = anim.player.jump.quads[v.anim.frame]
+				local _, _, w, h = quad:getViewport()
+				love.graphics.draw(gfx.player.jumpSheet, quad, v.x, v.y,
+									0, v.direction, 1, math.floor(w/2), math.floor(h/2))
+			elseif v.anim.state == 'attack' then
+				if v.holdingStaff then
+					local quad = anim.player.attackStaff.quads[v.anim.frame]
+					love.graphics.draw(gfx.player.attackStaffSheet, quad, v.x, v.y,
+										0, v.direction, 1, 15, 14)
+				else
+					local quad = anim.player.walk.quads[1]
+					local _, _, w, h = quad:getViewport()
+					love.graphics.draw(gfx.player.walkSheet, quad, v.x, v.y,
+										0, v.direction, 1, math.floor(w/2), math.floor(h/2))
+				end
+			end
 			if v.grapple.on then
 				love.graphics.setLineWidth(1)
 				love.graphics.setColor(255, 0, 0)

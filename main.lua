@@ -5,6 +5,7 @@ worldSize = {x=tileMap.width*tileMap.tilewidth, y=tileMap.height*tileMap.tilehei
 json = require 'json'
 require 'socket'
 require 'utils'
+require 'logger'
 require 'loadassets'
 require 'server'
 require 'client'
@@ -156,7 +157,7 @@ function love.draw()
 		lighting.draw()
 		hud.draw()
 		chat.draw()
-		debug.draw()
+		logger.draw()
 	end
 	love.graphics.setCanvas()
 	love.graphics.setBackgroundColor(0, 0, 0)

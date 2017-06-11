@@ -58,7 +58,7 @@ function enemies.update(dt)
 							player.damage(1)
 						end
 					end
-					--debug.log(ud.type)
+					--logger.log(ud.type)
 				else
 					v.inAir = false
 				end
