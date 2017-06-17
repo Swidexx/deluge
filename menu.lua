@@ -80,7 +80,7 @@ setSFXVolume(menu.defaults.volume.sfx)
 menu.musicVolume = menu.addButton{state='options', img=gfx.menu.music, id='music', type='slider', val=menu.defaults.volume.music, width=56, x=gsx/2+30, y=70}
 setMusicVolume(menu.defaults.volume.music)
 menu.addButton{state='options', img=gfx.menu.fullscreen, id='fullscreen', type='switch', val=0, y=130}
-menu.addButton{state='options', img=gfx.menu.windowsize, id='windowsize', type='cycle', val=2, numvals=4, y=150}
+menu.addButton{state='options', img=gfx.menu.windowsize, id='windowsize', type='cycle', val=1, numvals=4, y=150}
 menu.addButton{state='options', img=gfx.menu.back, id='back', y=230}
 
 function menu.mousepressed(x, y, btn)

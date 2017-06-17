@@ -55,17 +55,21 @@ function love.update(dt)
 	end
 	local mx, my = screen2game(love.mouse.getPosition())
 	if gamestate == 'playing' then
-		bullets.update(dt)
 		world.update(dt)
+		bullets.update(dt)
 		enemies.update(dt)
 		player.update(dt)
 		playerLight:setPosition(player.getX(), player.getY())
 		hud.update(dt)
 	end
+	--[[
 	camera.x = math.floor(player.getX() - gsx/2 + 0.5) +
 				math.floor((mx-gsx/2)/3) + (mx-gsx/2 < 0 and 1 or 0)
 	camera.y = math.floor(player.getY() - gsy/2 + 0.5) +
 				math.floor((my-gsy/2)/3) + (my-gsy/2 < 0 and 1 or 0)
+	]]
+	camera.x = math.floor(player.getX() - gsx/2 + 0.5)
+	camera.y = math.floor(player.getY() - gsy/2 + 0.5)
 	camera.x = math.min(math.max(camera.x, 0), worldSize.x - gsx)
 	camera.y = math.min(math.max(camera.y, 0), worldSize.y - gsy)
 

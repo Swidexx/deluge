@@ -1,15 +1,6 @@
 
 function beginContact(a, b, coll)
-	if type(a:getUserData()) == 'table' and type(b:getUserData()) == 'table' then
-		local bullet = a:getUserData().type == 'bullet' and a or b:getUserData().type == 'bullet' and b or nil
-		if bullet then
-			local enemy = a:getUserData().type == 'enemy' and a or b:getUserData().type == 'enemy' and b or nil
-			if enemy then
-				enemies.damage(enemy:getUserData().table, 1)
-			end
-			bullet:destroy()
-		end
-	end
+	
 end
 
 function endContact(a, b, coll)
