@@ -30,6 +30,18 @@ function client.update(dt)
 				local id, msg = cmdParams:match('^(%S*) (.*)')
 				table.insert(client.chatLog, {id=id, msg=msg})
 				chat.lastOpen = time
+			elseif cmd == 'damage' then
+				local pkg
+				if pcall(function() pkg = json.decode(cmdParams) end) then
+					player.damage(pkg.val)
+					local dist = math.sqrt(pkg.direction.x^2 + pkg.direction.y^2)
+					local x, y = pkg.direction.x/dist, pkg.direction.y/dist
+					y = y - 2
+					dist = math.sqrt(x^2 + y^2)
+					local scale = 200
+					x, y = x/dist*scale, y/dist*scale
+					objects.player.body:applyLinearImpulse(x, y)
+				end
 			elseif cmd == 'stateUpdate' then
 				local stateUpdate
 				if pcall(function() stateUpdate = json.decode(cmdParams) end) then
@@ -39,16 +51,46 @@ function client.update(dt)
 			elseif cmd == 'add' then
 				local add
 				if pcall(function() add = json.decode(cmdParams) end) then
-					for k, v in pairs(add.players) do
-						client.currentState.players[k] = {}
-						setPlayerVals(client.currentState.players[k], v)
+					if add.players then
+						for k, v in pairs(add.players) do
+							local new = not client.currentState.players[k]
+							client.currentState.players[k] = {}
+							setPlayerVals(client.currentState.players[k], v)
+							if new then
+								objects.otherPlayers[k] = {
+									body = love.physics.newBody(physWorld, v.x, v.y, 'dynamic'),
+									shape = love.physics.newRectangleShape(19, 33)
+								}
+								local opk = objects.otherPlayers[k]
+								opk.fixture = love.physics.newFixture(opk.body, opk.shape, 1)
+								opk.fixture:setUserData{type='otherPlayer', id=k}
+								opk.fixture:setFriction(0)
+								opk.fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
+								opk.body:setFixedRotation(true)
+								opk.body:setGravityScale(0)
+							end
+						end
+					end
+					if add.bullets then
+						for _, v in pairs(add.bullets) do
+							if v.from ~= player.id then
+								bullets.spawn(false, v.x, v.y, v.a, v.s)
+							end
+						end
 					end
 				end
 			elseif cmd == 'remove' then
 				local remove
 				if pcall(function() remove = json.decode(cmdParams) end) then
-					for k, _ in pairs(remove.players) do
-						client.currentState.players[k] = nil
+					if remove.players then
+						for k, _ in pairs(remove.players) do
+							client.currentState.players[k] = nil
+							if objects.otherPlayers[k] then
+								objects.otherPlayers[k].fixture:destroy()
+								objects.otherPlayers[k].body:destroy()
+								objects.otherPlayers[k] = nil
+							end
+						end
 					end
 				end
 			end
@@ -56,7 +98,6 @@ function client.update(dt)
 	until not data
 	if client.states[#client.states] and client.states[#client.states-1] then
 		local timeOffset = time - client.states[#client.states-1].time
-		--client.stateTime = client.stateTime + negGoldSoftplus(1 + timeOffset*2)*dt
 		client.stateTime = client.stateTime + dt
 		client.stateTime = math.min(math.max(client.stateTime, client.states[#client.states-1].time), client.states[#client.states].time)
 		logger.logVal('smoothing delay', time - client.stateTime)
@@ -82,6 +123,10 @@ function client.update(dt)
 						on = v.grapple.on, x = v.grapple.x, y = v.grapple.y
 					}
 					p.holdingStaff = v.holdingStaff
+				end
+				if objects.otherPlayers[k] then
+					objects.otherPlayers[k].body:setX(p.x)
+					objects.otherPlayers[k].body:setY(p.y)
 				end
 			end
 		end

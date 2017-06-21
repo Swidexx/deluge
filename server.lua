@@ -6,11 +6,13 @@ function server.start(port)
 	server.udp = socket.udp()
 	server.udp:settimeout(0)
 	server.udp:setsockname('*', port)
-	server.chatLog = {}
-	server.players = {}
 	server.ip2id = {}
+	server.players = {}
+	server.chatLog = {}
 	server.lastUpdate = 0
 	server.updateRate = 1/20
+	server.added = {}
+	server.removed = {}
 end
 
 function server.addPlayer(id, ip, port)
@@ -30,7 +32,6 @@ function server.addPlayer(id, ip, port)
 		holdingStaff = false
 	})
 	server.ip2id[ip .. ':' .. port] = id
-	server.added = server.added or {}
 	server.added.players = server.added.players or {}
 	server.added.players[id] = {}
 	setPlayerVals(server.added.players[id], server.players[id])
@@ -46,7 +47,6 @@ function server.removePlayer(id)
 	local v = server.players[id]
 	server.ip2id[v.connection.ip .. ':' .. v.connection.port] = nil
 	server.players[id] = nil
-	server.removed = server.removed or {}
 	server.removed.players = server.removed.players or {}
 	server.removed.players[id] = true
 	local dg = string.format('%s %s %s', 'chatMsg', 'Server', id .. ' disconnected')
@@ -66,13 +66,15 @@ function server.update(dt)
 		if data then
 			local cmd, cmdParams = data:match('^(%S*) (.*)')
 			if cmd == 'requestPlayer' then
-				id = cmdParams:match('^(%S*)')
+				local reqID = cmdParams
+				logger.log('server - requestPlayer: ' .. reqID)
 				local postfix = 0
-				while server.players[buildID(id, postfix)] or buildID(id, postfix) == 'Server' do
+				while server.players[buildID(reqID, postfix)] or buildID(reqID, postfix) == 'Server' do
 					postfix = postfix + 1
 				end
-				local fullID = buildID(id, postfix)
+				local fullID = buildID(reqID, postfix)
 				server.addPlayer(fullID, msg_or_ip, port_or_nil)
+				-- send current state to new player
 				local add = {players={}}
 				for k, v in pairs(server.players) do
 					add.players[k] = {}
@@ -96,6 +98,24 @@ function server.update(dt)
 					end
 				elseif cmd == 'removePlayer' then
 					server.removePlayer(id)
+				elseif cmd == 'addBullet' then
+					local bullet
+					if pcall(function() bullet = json.decode(cmdParams) end) then
+						server.added.bullets = server.added.bullets or {}
+						bullet.from = id
+						table.insert(server.added.bullets, bullet)
+					end
+				elseif cmd == 'damage' then
+					local damage
+					if pcall(function() damage = json.decode(cmdParams) end) then
+						if damage.type == 'player' then
+							local dg = string.format('%s %s', 'damage', cmdParams)
+							local p = server.players[damage.id]
+							if p then
+								server.udp:sendto(dg, p.connection.ip, p.connection.port)
+							end
+						end
+					end
 				end
 			end
 		elseif msg_or_ip ~= 'timeout' then
@@ -115,24 +135,14 @@ function server.update(dt)
 			setPlayerVals(stateUpdate.players[k], v)
 		end
 		local dgStateUpdate = string.format('%s %s', 'stateUpdate', json.encode(stateUpdate))
-		local dgAdd
-		if server.added then
-			dgAdd = string.format('%s %s', 'add', json.encode(server.added))
-			server.added = nil
-		end
-		local dgRemove
-		if server.removed then
-			dgRemove = string.format('%s %s', 'remove', json.encode(server.removed))
-			server.removed = nil
-		end
+		local dgAdd = string.format('%s %s', 'add', json.encode(server.added))
+		server.added = {}
+		local dgRemove = string.format('%s %s', 'remove', json.encode(server.removed))
+		server.removed = {}
 		for k, v in pairs(server.players) do
 			server.udp:sendto(dgStateUpdate, v.connection.ip, v.connection.port)
-			if dgAdd then
-				server.udp:sendto(dgAdd, v.connection.ip, v.connection.port)
-			end
-			if dgRemove then
-				server.udp:sendto(dgRemove, v.connection.ip, v.connection.port)
-			end
+			server.udp:sendto(dgAdd, v.connection.ip, v.connection.port)
+			server.udp:sendto(dgRemove, v.connection.ip, v.connection.port)
 		end
 	end
 end

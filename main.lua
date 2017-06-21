@@ -75,6 +75,8 @@ function love.update(dt)
 
 	lighting.update(dt)
 
+	logger.logVal('#objects.bullets', #objects.bullets)
+
 	collectgarbage()
 end
 
@@ -104,24 +106,35 @@ function love.wheelmoved(x, y)
 end
 
 function love.textinput(t)
-	if gamestate == 'menu' then
-		menu.textinput(t)
-	elseif gamestate == 'playing' then
-		chat.textinput(t)
+	if logger.console.active then
+		logger.console.textinput(t)
+	else
+		if gamestate == 'menu' then
+			menu.textinput(t)
+		elseif gamestate == 'playing' then
+			chat.textinput(t)
+		end
 	end
 end
 
 function love.keypressed(k, scancode, isrepeat)
-	if gamestate == 'menu' then
-		menu.keypressed(k, scancode, isrepeat)
-	elseif gamestate == 'playing' then
-		player.keypressed(k, scancode, isrepeat)
-		chat.keypressed(k, scancode, isrepeat)
-		lighting.keypressed(k, scancode, isrepeat)
-		if k == 'escape' then
-			gamestate = 'menu'
-			music.rhymull:stop()
-			music.strategy:play()
+	if k == '`' then
+		logger.console.active = not logger.console.active
+	end
+	if logger.console.active then
+		logger.console.keypressed(k, scancode, isrepeat)
+	else
+		if gamestate == 'menu' then
+			menu.keypressed(k, scancode, isrepeat)
+		elseif gamestate == 'playing' then
+			player.keypressed(k, scancode, isrepeat)
+			chat.keypressed(k, scancode, isrepeat)
+			lighting.keypressed(k, scancode, isrepeat)
+			if k == 'escape' then
+				gamestate = 'menu'
+				music.rhymull:stop()
+				music.strategy:play()
+			end
 		end
 	end
 end
@@ -161,8 +174,8 @@ function love.draw()
 		lighting.draw()
 		hud.draw()
 		chat.draw()
-		logger.draw()
 	end
+	logger.draw()
 	love.graphics.setCanvas()
 	love.graphics.setBackgroundColor(0, 0, 0)
 	love.graphics.setColor(255, 255, 255)

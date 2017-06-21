@@ -1,6 +1,6 @@
 
 function beginContact(a, b, coll)
-	
+
 end
 
 function endContact(a, b, coll)
@@ -27,6 +27,7 @@ objects = {
 		body = love.physics.newBody(physWorld, 1260, 1017, 'dynamic'),
 		shape = love.physics.newRectangleShape(15, 1)
 	},
+	otherPlayers = {},
 	worldEdges = {
 		left = {
 			body = love.physics.newBody(physWorld, -5, worldSize.y/2, 'static'),

@@ -173,7 +173,7 @@ function player.mousepressed(x, y, btn)
 	local a = math.atan2(x, -y)-math.pi/2
 	if btn == 1 then
 		if player.inventory.selected == 1 then
-			spawnBullet(player.getX(), player.getY(), a, 1.2e3)
+			bullets.spawn(true, player.getX(), player.getY(), a, 1.2e3)
 			sfx.laser:clone():play()
 		elseif player.inventory.selected == 2 then
 			player.anim.state = 'attack'

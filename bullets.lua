@@ -20,6 +20,12 @@ function bullets.update(dt)
 					v.hit.fixture:getBody():applyLinearImpulse((v.body:getX()-v.lastPos.x)*5,
 											(v.body:getY()-v.lastPos.y)*5, v.hit.x, v.hit.y)
 					enemies.damage(v.hit.fixture:getUserData().table, 1)
+				elseif v.hit.type == 'otherPlayer' then
+					local dg = string.format('%s %s', 'damage', json.encode{
+						type='player', id=v.hit.fixture:getUserData().id, val=1,
+						direction={x=v.body:getX()-v.lastPos.x, y=v.body:getY()-v.lastPos.y}
+					})
+					client.udp:send(dg)
 				end
 				v.fixture:destroy()
 				v.body:destroy()
@@ -41,13 +47,16 @@ end
 
 function bulletCallback(fixture, x, y, xn, yn, fraction)
 	if type(fixture:getUserData()) == 'table' then
-		if fixture:getUserData().type == 'tile' or fixture:getUserData().type == 'enemy' then
-			local v = objects.bullets[bullets.cbActive]
+		local v = objects.bullets[bullets.cbActive]
+		local type = fixture:getUserData().type
+		if type == 'tile' or type == 'wall' or type == 'enemy' or
+		v.fromPlayer and type == 'otherPlayer' and fixture:getUserData().id ~= player.id
+		or not v.fromPlayer and type == 'player' then
 			if not v.hit or fraction < v.hit.dist then
 				v.hit = {
 					dist = fraction,
 					fixture = fixture,
-					type = fixture:getUserData().type,
+					type = type,
 					x = x,
 					y = y
 				}
@@ -57,8 +66,9 @@ function bulletCallback(fixture, x, y, xn, yn, fraction)
 	return -1
 end
 
-function spawnBullet(x, y, a, s)
+function bullets.spawn(fromPlayer, x, y, a, s)
 	local t = {
+		fromPlayer = fromPlayer,
 		time = time,
 		body = love.physics.newBody(physWorld, x, y, 'dynamic'),
 		lastPos = {x=x, y=y},
@@ -66,14 +76,18 @@ function spawnBullet(x, y, a, s)
 	}
 	t.fixture = love.physics.newFixture(t.body, t.shape, 20)
 	t.fixture:setUserData{type='bullet'}
-	--t.fixture:setCategory(2)
 	t.fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
-	--t.body:setBullet(true)
 	t.body:setLinearVelocity(math.cos(a)*s, math.sin(a)*s)
 	table.insert(bullets.paths, {})
 	table.insert(bullets.paths[#bullets.paths], {time=time, x=x, y=y})
 	t.pathID = #bullets.paths
 	table.insert(objects.bullets, t)
+	if fromPlayer then
+		local dg = string.format('%s %s', 'addBullet', json.encode{
+			x=x, y=y, a=a, s=s
+		})
+		client.udp:send(dg)
+	end
 end
 
 function bullets.draw()
