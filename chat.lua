@@ -2,14 +2,13 @@
 chat = {
 	typing = false,
 	message = '',
+	lastMessage = '',
 	lastOpen = -6
 }
 
 function chat.textinput(k)
 	if chat.typing then
-		if chat.message:len() < 22 then
-			chat.message = chat.message .. k
-		end
+		chat.message = chat.message .. k
 	end
 end
 
@@ -20,16 +19,44 @@ function chat.keypressed(k, scancode, isrepeat)
 	elseif k == 'return' then
 		chat.typing = not chat.typing
 		chat.lastOpen = time
-		if not chat.typing and chat.message ~= '' then
-			local dg = string.format('%s %s', 'chatMsg', chat.message)
-			client.udp:send(dg)
-			chat.message = ''
+		if chat.message:sub(0, 4) == '/tp ' then
+			local id = chat.message:sub(5, chat.message:len())
+			for k, v in pairs(client.currentState.players) do
+				if k == id then
+					objects.player.body:setPosition(v.x, v.y)
+					break
+				end
+			end
 		end
+		if not chat.typing and chat.message:gsub('%s+', '') ~= '' then
+			local idx = 0
+			while true do
+				local txt = chat.message:sub(idx, math.min(idx - player.id:len() + 21))
+				idx = idx - player.id:len() + 22
+				local dg = string.format('%s %s', 'chatMsg', txt)
+				client.udp:send(dg)
+				if idx > chat.message:len() then
+					break
+				end
+			end
+			chat.lastMessage = chat.message
+		end
+		chat.message = ''
+	elseif k == '/' then
+		if not chat.typing then
+			chat.typing = true
+		end
+	elseif k == 'up' then
+		if chat.typing then
+			chat.message = chat.lastMessage
+		end
+	elseif k == 'down' then
+		chat.message = ''
 	elseif k == 'v' then
 		if chat.typing and (love.keyboard.isDown('lctrl') or love.keyboard.isDown('rctrl')) then
 			local paste = love.system.getClipboardText()
 			for v in paste:gmatch('.') do
-				if chat.message:len() < 22 then
+				if v ~= '\n' then
 					chat.message = chat.message .. v
 				end
 			end
@@ -63,9 +90,10 @@ function chat.draw()
 	if chat.typing then
 		chat.lastOpen = time
 		love.graphics.setColor(0, 0, 0, 128)
-		love.graphics.rectangle('fill', 2, gsy-16, 120, 12)
+		love.graphics.rectangle('fill', 2, gsy-16, 146, 12)
 		love.graphics.setColor(0, 128, 192)
-		love.graphics.print(chat.message .. (time%1 > 0.5 and '|' or ''), 3, gsy-16)
+		local txt = chat.message:sub(math.max(chat.message:len()-22, 0), chat.message:len())
+		love.graphics.print(txt .. (time%1 > 0.5 and '|' or ''), 3, gsy-16)
 	end
 	love.graphics.setShader()
 end

@@ -76,6 +76,11 @@ function love.update(dt)
 	lighting.update(dt)
 
 	logger.logVal('#objects.bullets', #objects.bullets)
+	logger.logVal('chat.lastMessage', chat.lastMessage)
+
+	if music.steam:isPlaying() then
+		music.steam:setPitch(love.math.noise(time)+0.25)
+	end
 
 	collectgarbage()
 end
@@ -118,7 +123,7 @@ function love.textinput(t)
 end
 
 function love.keypressed(k, scancode, isrepeat)
-	if k == '`' then
+	if devmode and k == '`' then
 		logger.console.active = not logger.console.active
 	end
 	if logger.console.active then
@@ -127,14 +132,16 @@ function love.keypressed(k, scancode, isrepeat)
 		if gamestate == 'menu' then
 			menu.keypressed(k, scancode, isrepeat)
 		elseif gamestate == 'playing' then
-			player.keypressed(k, scancode, isrepeat)
-			chat.keypressed(k, scancode, isrepeat)
-			lighting.keypressed(k, scancode, isrepeat)
-			if k == 'escape' then
-				gamestate = 'menu'
-				music.rhymull:stop()
-				music.strategy:play()
+			if not chat.typing then
+				player.keypressed(k, scancode, isrepeat)
+				lighting.keypressed(k, scancode, isrepeat)
+				if k == 'escape' then
+					gamestate = 'menu'
+					music.rhymull:stop()
+					music.strategy:play()
+				end
 			end
+			chat.keypressed(k, scancode, isrepeat)
 		end
 	end
 end

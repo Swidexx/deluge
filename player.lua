@@ -162,6 +162,11 @@ function player.damage(d)
 	player.health = player.health - d
 	sfx.hitHurt:clone():play()
 	if player.health <= 0 then
+		if objects.player.grappleJoint then
+			objects.player.grappleJoint:destroy()
+			objects.player.grappleJoint = nil
+		end
+		player.grapple.found = false
 		sfx.death:clone():play()
 		player.respawn()
 	end
@@ -223,7 +228,7 @@ end
 
 function player.keypressed(k, scancode, isrepeat)
 	local xv, yv = objects.player.body:getLinearVelocity()
-	if not isrepeat and not chat.typing then
+	if not isrepeat then
 		if k == 'space' then
 			if objects.player.grappleJoint or not player.inAir then
 				player.jump()

@@ -10,7 +10,7 @@ math.randomseed(love.timer.getTime())
 
 love.keyboard.setKeyRepeat(true)
 
-devmode = false
+devmode = true
 
 gfx = {
 	techemonic = love.graphics.newImage('gfx/techemonic.png'),
@@ -151,7 +151,8 @@ sfx = {
 music = {
 	home = love.audio.newSource('music/home.ogg', 'stream'),
 	strategy = love.audio.newSource('music/strategy.ogg', 'stream'),
-	rhymull = love.audio.newSource('music/Rhymull.ogg', 'stream')
+	rhymull = love.audio.newSource('music/Rhymull.ogg', 'stream'),
+	steam = love.audio.newSource('music/steam.ogg', 'stream')
 }
 
 for _, v in pairs(music) do

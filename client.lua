@@ -15,12 +15,20 @@ function client.connect(ip, port)
 	client.currentState = {players={}}
 	client.lastUpdate = 0
 	client.updateRate = 1/20
+	client.msgCount = 0
+	client.msgCountTime = time
 end
 
 function client.update(dt)
 	repeat
 		local data, msg = client.udp:receive()
 		if data then
+			if time - client.msgCountTime > 1 then
+				client.msgCountTime = client.msgCountTime + 1
+				logger.logVal('msgs/second from server', client.msgCount)
+				client.msgCount = 0
+			end
+			client.msgCount = client.msgCount + 1
 			local cmd, cmdParams = data:match('^(%S*) (.*)$')
 			if cmd == 'returnPlayerID' then
 				local id = cmdParams
@@ -28,18 +36,22 @@ function client.update(dt)
 				player.id = id
 			elseif cmd == 'chatMsg' then
 				local id, msg = cmdParams:match('^(%S*) (.*)')
+				if msg == '/steam' then
+					if music.steam:isPlaying() then
+						music.steam:stop()
+					else
+						music.steam:play()
+					end
+				end
 				table.insert(client.chatLog, {id=id, msg=msg})
 				chat.lastOpen = time
 			elseif cmd == 'damage' then
 				local pkg
 				if pcall(function() pkg = json.decode(cmdParams) end) then
 					player.damage(pkg.val)
-					local dist = math.sqrt(pkg.direction.x^2 + pkg.direction.y^2)
-					local x, y = pkg.direction.x/dist, pkg.direction.y/dist
-					y = y - 2
-					dist = math.sqrt(x^2 + y^2)
-					local scale = 200
-					x, y = x/dist*scale, y/dist*scale
+					local x, y = (pkg.direction.x < 0 and -1 or 1)/math.sqrt(5), -2/math.sqrt(5)
+					local scale = 100
+					x, y = x*scale, y*scale
 					objects.player.body:applyLinearImpulse(x, y)
 				end
 			elseif cmd == 'stateUpdate' then

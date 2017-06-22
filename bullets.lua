@@ -37,7 +37,7 @@ function bullets.update(dt)
 			end
 		end
 	end
-	--v[#v] can error ?
+	--v[#v] can be nil ?
 	for i, v in pairs(bullets.paths) do
 		if not v[#v] or time - v[#v].time > 3 then
 			bullets.paths[i] = nil

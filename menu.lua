@@ -60,7 +60,7 @@ menu.defaults = dofile(love.filesystem.getRealDirectory("menuDefaults.lua") .. "
 menu.defaults.name = menu.defaults.name or 'Player'
 menu.defaults.ip = menu.defaults.ip or '127.0.0.1.1357'
 menu.defaults.volume = menu.defaults.volume or {}
-menu.defaults.volume.main = menu.defaults.volume.main or 0.7
+menu.defaults.volume.main = menu.defaults.volume.main or 0.5
 menu.defaults.volume.sfx = menu.defaults.volume.sfx or 0.7
 menu.defaults.volume.music = menu.defaults.volume.music or 0.7
 

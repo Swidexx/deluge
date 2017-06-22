@@ -61,6 +61,8 @@ objects.player.body:setFixedRotation(true)
 objects.playerSensorDown.fixture = love.physics.newFixture(objects.playerSensorDown.body, objects.playerSensorDown.shape, 1)
 objects.playerSensorDown.fixture:setUserData{type='playerSensorDown'}
 objects.playerSensorDown.fixture:setSensor(true)
+objects.playerSensorDown.body:setFixedRotation(true)
+objects.playerSensorDown.body:setGravityScale(0)
 
 objects.player.sensorDownJoint = love.physics.newWeldJoint(objects.player.body, objects.playerSensorDown.body, 1260, 1000)
 
