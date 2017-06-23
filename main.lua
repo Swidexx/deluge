@@ -24,9 +24,9 @@ require 'bullets'
 
 function love.load()
 	gamestate = 'splash'
-	sfx.techemonic:play()
-	sfx.techemonic:seek(3)
-	sfx.techemonic:setPitch(0.6)
+	sfx['techemonic']:play()
+	sfx['techemonic']:seek(3)
+	sfx['techemonic']:setPitch(0.6)
 end
 
 gameScale = math.max(math.min(ssx/gsx, ssy/gsy), 1)
@@ -78,8 +78,8 @@ function love.update(dt)
 	logger.logVal('#objects.bullets', #objects.bullets)
 	logger.logVal('chat.lastMessage', chat.lastMessage)
 
-	if music.steam:isPlaying() then
-		music.steam:setPitch(love.math.noise(time)+0.25)
+	if music['steam']:isPlaying() then
+		music['steam']:setPitch(love.math.noise(time)+0.25)
 	end
 
 	collectgarbage()
@@ -87,8 +87,8 @@ end
 
 function love.mousepressed(x, y, btn, isTouch)
 	if gamestate == 'splash' then
-		sfx.techemonic:stop()
-		music.strategy:play()
+		sfx['techemonic']:stop()
+		music['strategy']:play()
 		gamestate = 'menu'
 	elseif gamestate == 'menu' then
 		menu.mousepressed(x, y, btn)
@@ -137,8 +137,8 @@ function love.keypressed(k, scancode, isrepeat)
 				lighting.keypressed(k, scancode, isrepeat)
 				if k == 'escape' then
 					gamestate = 'menu'
-					music.rhymull:stop()
-					music.strategy:play()
+					music['rhymull']:stop()
+					music['strategy']:play()
 				end
 			end
 			chat.keypressed(k, scancode, isrepeat)
@@ -155,7 +155,7 @@ function love.draw()
 		love.graphics.setShader()
 		if time > 5 then
 			gamestate = 'menu'
-			music.strategy:play()
+			music['strategy']:play()
 		end
 	elseif gamestate == 'menu' then
 		menu.draw()

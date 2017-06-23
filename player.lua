@@ -82,7 +82,7 @@ function player.update(dt)
 	end
 
 	if player.lastInAir and not player.inAir then
-		sfx.land:clone():play()
+		sfx['land']:clone():play()
 	end
 
 	if player.anim.state ~= 'jump' then
@@ -139,7 +139,7 @@ function player.update(dt)
 		player.anim.frameTime = math.min(player.anim.frameTime - 1, 1)
 		player.anim.frame = player.anim.nextFrame
 		if player.anim.state == 'walk' and (player.anim.frame == 9 or player.anim.frame == 16) then
-			sfx.step:clone():play()
+			sfx['step']:clone():play()
 		elseif player.anim.state == 'attack' and player.anim.frame == 8 then
 			player.attacked = true
 			player.anim.frame = 7
@@ -155,19 +155,19 @@ function player.jump()
 	player.grapple.found = false
 	local xv, yv = objects.player.body:getLinearVelocity()
 	objects.player.body:setLinearVelocity(xv, -2.5e2)
-	sfx.jump:clone():play()
+	sfx['jump']:clone():play()
 end
 
 function player.damage(d)
 	player.health = player.health - d
-	sfx.hitHurt:clone():play()
+	sfx['hitHurt']:clone():play()
 	if player.health <= 0 then
 		if objects.player.grappleJoint then
 			objects.player.grappleJoint:destroy()
 			objects.player.grappleJoint = nil
 		end
 		player.grapple.found = false
-		sfx.death:clone():play()
+		sfx['death']:clone():play()
 		player.respawn()
 	end
 end
@@ -179,7 +179,7 @@ function player.mousepressed(x, y, btn)
 	if btn == 1 then
 		if player.inventory.selected == 1 then
 			bullets.spawn(true, player.getX(), player.getY(), a, 1.2e3)
-			sfx.laser:clone():play()
+			sfx['laser']:clone():play()
 		elseif player.inventory.selected == 2 then
 			player.anim.state = 'attack'
 			player.anim.frame = 1
@@ -203,7 +203,7 @@ function player.mousepressed(x, y, btn)
 					player.grapple.fixture:getBody(), player.getX(), player.getY(),
 					player.grapple.x, player.grapple.y,
 					math.sqrt((player.getX()-player.grapple.x)^2+(player.getY()-player.grapple.y)^2), true)
-			sfx.select:clone():play()
+			sfx['select']:clone():play()
 		end
 	end
 end

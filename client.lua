@@ -37,10 +37,10 @@ function client.update(dt)
 			elseif cmd == 'chatMsg' then
 				local id, msg = cmdParams:match('^(%S*) (.*)')
 				if msg == '/steam' then
-					if music.steam:isPlaying() then
-						music.steam:stop()
+					if music['steam']:isPlaying() then
+						music['steam']:stop()
 					else
-						music.steam:play()
+						music['steam']:play()
 					end
 				end
 				table.insert(client.chatLog, {id=id, msg=msg})

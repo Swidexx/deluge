@@ -12,7 +12,7 @@ function world.update(dt)
 	end
 	if chestState == 10 and lastState ~= chestState then
 		player.health = 4
-		sfx.heal:clone():play()
+		sfx['heal']:clone():play()
 	end
 end
 

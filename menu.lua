@@ -5,15 +5,23 @@ menu = {
 }
 
 function setSFXVolume(n)
-	for _, v in pairs(sfx) do
-		v:setVolume(n)
+	for k, v in pairs(sfx) do
+		local fac = soundVolumes.sfx[k] or 1
+		v:setVolume(n*fac)
 	end
 end
 
 function setMusicVolume(n)
-	for _, v in pairs(music) do
-		v:setVolume(n)
+	for k, v in pairs(music) do
+		local fac = soundVolumes.music[k] or 1
+		v:setVolume(n*fac)
 	end
+end
+
+function menu.saveDefaults()
+	local str = "vals={name='" .. menu.nameInput.val .. "',ip='" .. menu.ipInput.val .. "',volume={main=" ..
+		menu.mainVolume.val .. ",sfx=" .. menu.sfxVolume.val .. ",music=" .. menu.musicVolume.val .. "}}\nreturn vals"
+	love.filesystem.write('menuDefaults.lua', str)
 end
 
 function menu.addButton(t)
@@ -51,18 +59,11 @@ function menu.addButton(t)
 	table.insert(menu.btns[state], {img=t.img, text=t.text, id=t.id, type=t.type, font=font, val=val, width=width, numvals=numvals, held=false, x=x, y=y})
 	return menu.btns[state][#menu.btns[state]]
 end
-
 if not love.filesystem.exists('menuDefaults.lua') then
-	local str = "vals={name='Player',ip='127.0.0.1:1357',volume={main=0.7,sfx=0.7,music=0.7}}\nreturn vals"
+	local str = "vals={name='Player',ip='127.0.0.1:1357',volume={main=0.5,sfx=0.5,music=0.5}}\nreturn vals"
 	love.filesystem.write('menuDefaults.lua', str)
 end
 menu.defaults = dofile(love.filesystem.getRealDirectory("menuDefaults.lua") .. "/menuDefaults.lua")
-menu.defaults.name = menu.defaults.name or 'Player'
-menu.defaults.ip = menu.defaults.ip or '127.0.0.1.1357'
-menu.defaults.volume = menu.defaults.volume or {}
-menu.defaults.volume.main = menu.defaults.volume.main or 0.5
-menu.defaults.volume.sfx = menu.defaults.volume.sfx or 0.7
-menu.defaults.volume.music = menu.defaults.volume.music or 0.7
 
 menu.addButton{img=gfx.menu.title, type='static', y=40}
 menu.addButton{img=gfx.menu.play, id='play', y=140}
@@ -81,6 +82,7 @@ menu.musicVolume = menu.addButton{state='options', img=gfx.menu.music, id='music
 setMusicVolume(menu.defaults.volume.music)
 menu.addButton{state='options', img=gfx.menu.fullscreen, id='fullscreen', type='switch', val=0, y=130}
 menu.addButton{state='options', img=gfx.menu.windowsize, id='windowsize', type='cycle', val=1, numvals=4, y=150}
+menu.addButton{state='options', img=gfx.menu.opensavedir, id='opensavedir', y=190}
 menu.addButton{state='options', img=gfx.menu.back, id='back', y=230}
 
 function menu.mousepressed(x, y, btn)
@@ -101,20 +103,21 @@ function menu.mousepressed(x, y, btn)
 				if mx > v.x and mx < v.x+v.img:getWidth() and my > v.y and my < v.y+v.img:getHeight() then
 					if v.id == 'play' then
 						menu.state = 'play'
-						sfx.select:clone():play()
+						sfx['select']:clone():play()
 					elseif v.id == 'options' then
 						menu.state = 'options'
-						sfx.select:clone():play()
+						sfx['select']:clone():play()
 					elseif v.id == 'exit' then
 						love.event.quit()
-						sfx.select:clone():play()
+						sfx['select']:clone():play()
 					elseif v.id == 'back' then
 						menu.state = 'main'
-						sfx.select:clone():play()
+						menu.saveDefaults()
+						sfx['select']:clone():play()
 					elseif v.id == 'fullscreen' then
 						love.window.setFullscreen(not love.window.getFullscreen())
 						v.val = 1-v.val
-						sfx.select:clone():play()
+						sfx['select']:clone():play()
 					elseif v.id == 'windowsize' and not love.window.getFullscreen() then
 						v.val = (v.val+1)%v.numvals
 						_, _, flags = love.window.getMode()
@@ -122,7 +125,10 @@ function menu.mousepressed(x, y, btn)
 						love.window.setMode(w, h, flags)
 						love.resize(w, h)
 						sendShaderDefaults()
-						sfx.select:clone():play()
+						sfx['select']:clone():play()
+					elseif v.id == 'opensavedir' then
+						love.system.openURL("file://" .. love.filesystem.getSaveDirectory())
+						sfx['select']:clone():play()
 					end
 					break
 				end
@@ -133,22 +139,16 @@ function menu.mousepressed(x, y, btn)
 						local ip, port = menu.ipInput.val:match('(.-):(.*)')
 						server.start(port or '1357')
 						client.connect('127.0.0.1', port or '1357')
-						music.strategy:stop()
-						music.rhymull:play()
-						sfx.select:clone():play()
-						local str = "vals={name='" .. menu.nameInput.val .. "',ip='" .. menu.ipInput.val .. "',volume={main=" ..
-							menu.mainVolume.val .. ",sfx=" .. menu.sfxVolume.val .. ",music=" .. menu.musicVolume.val .. "}}\nreturn vals"
-						love.filesystem.write('menuDefaults.lua', str)
+						music['strategy']:stop()
+						music['rhymull']:play()
+						sfx['select']:clone():play()
 					elseif v.id == 'connect' then
 						gamestate = 'playing'
 						local ip, port = menu.ipInput.val:match('(.-):(.*)')
 						client.connect(ip, port or '1357')
-						music.strategy:stop()
-						music.rhymull:play()
-						sfx.select:clone():play()
-						local str = "vals={name='" .. menu.nameInput.val .. "',ip='" .. menu.ipInput.val .. "',volume={main=" ..
-							menu.mainVolume.val .. ",sfx=" .. menu.sfxVolume.val .. ",music=" .. menu.musicVolume.val .. "}}\nreturn vals"
-						love.filesystem.write('menuDefaults.lua', str)
+						music['strategy']:stop()
+						music['rhymull']:play()
+						sfx['select']:clone():play()
 					end
 				end
 			end
@@ -180,6 +180,7 @@ function menu.keypressed(k, scancode, isrepeat)
 			--love.event.quit()
 		else
 			menu.state = 'main'
+			menu.saveDefaults()
 			menu.sliderHeld = nil
 			menu.textInputSelected = nil
 		end

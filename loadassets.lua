@@ -25,6 +25,7 @@ gfx = {
 		music = love.graphics.newImage('gfx/menu/music.png'),
 		fullscreen = love.graphics.newImage('gfx/menu/fullscreen.png'),
 		windowsize = love.graphics.newImage('gfx/menu/windowsize.png'),
+		opensavedir = love.graphics.newImage('gfx/menu/opensavedir.png'),
 		back = love.graphics.newImage('gfx/menu/back.png'),
 	},
 	enemies = {
@@ -132,32 +133,41 @@ for i=1, 10 do
 end
 
 sfx = {
-	death = love.audio.newSource('sfx/Death.wav', 'static'),
-	explosion = love.audio.newSource('sfx/Explosion.wav', 'static'),
-	fire = love.audio.newSource('sfx/Fire.wav', 'static'),
-	heal = love.audio.newSource('sfx/Heal.wav', 'static'),
-	hitHurt = love.audio.newSource('sfx/Hit_Hurt.wav', 'static'),
-	jump = love.audio.newSource('sfx/Jump.wav', 'static'),
-	land = love.audio.newSource('sfx/Land.wav', 'static'),
-	laser = love.audio.newSource('sfx/Laser.wav', 'static'),
-	navDown = love.audio.newSource('sfx/NavDown.wav', 'static'),
-	navUp = love.audio.newSource('sfx/NavUp.wav', 'static'),
-	powerUp = love.audio.newSource('sfx/PowerUp.wav', 'static'),
-	select = love.audio.newSource('sfx/Select.wav', 'static'),
-	step = love.audio.newSource('sfx/Step.wav', 'static'),
-	techemonic = love.audio.newSource('sfx/techemonic.wav', 'static')
+	['death'] = love.audio.newSource('sfx/Death.wav', 'static'),
+	['explosion'] = love.audio.newSource('sfx/Explosion.wav', 'static'),
+	['fire'] = love.audio.newSource('sfx/Fire.wav', 'static'),
+	['heal'] = love.audio.newSource('sfx/Heal.wav', 'static'),
+	['hitHurt'] = love.audio.newSource('sfx/Hit_Hurt.wav', 'static'),
+	['jump'] = love.audio.newSource('sfx/Jump.wav', 'static'),
+	['land'] = love.audio.newSource('sfx/Land.wav', 'static'),
+	['laser'] = love.audio.newSource('sfx/Laser.wav', 'static'),
+	['navDown'] = love.audio.newSource('sfx/NavDown.wav', 'static'),
+	['navUp'] = love.audio.newSource('sfx/NavUp.wav', 'static'),
+	['powerUp'] = love.audio.newSource('sfx/PowerUp.wav', 'static'),
+	['select'] = love.audio.newSource('sfx/Select.wav', 'static'),
+	['step'] = love.audio.newSource('sfx/Step.wav', 'static'),
+	['techemonic'] = love.audio.newSource('sfx/techemonic.wav', 'static')
 }
 
 music = {
-	home = love.audio.newSource('music/home.ogg', 'stream'),
-	strategy = love.audio.newSource('music/strategy.ogg', 'stream'),
-	rhymull = love.audio.newSource('music/Rhymull.ogg', 'stream'),
-	steam = love.audio.newSource('music/steam.ogg', 'stream')
+	['home'] = love.audio.newSource('music/home.ogg', 'stream'),
+	['strategy'] = love.audio.newSource('music/strategy.ogg', 'stream'),
+	['rhymull'] = love.audio.newSource('music/Rhymull.ogg', 'stream'),
+	['steam'] = love.audio.newSource('music/steam.ogg', 'stream')
 }
 
 for _, v in pairs(music) do
 	v:setLooping(true)
 end
+
+soundVolumes = {
+	sfx = {
+		['techemonic'] = 0.4
+	},
+	music = {
+		['strategy'] = 1.4
+	}
+}
 
 shaders = {
 	splashScreen = love.graphics.newShader('shaders/splashScreen.glsl'),
