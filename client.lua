@@ -12,7 +12,7 @@ function client.connect(ip, port)
 	client.states = {}
 	client.stateIdx = 1
 	client.stateTime = time
-	client.currentState = {players={}}
+	client.currentState = {players={}, enemies={}}
 	client.lastUpdate = 0
 	client.updateRate = 1/20
 	client.msgCount = 0
@@ -50,13 +50,14 @@ function client.update(dt)
 				if pcall(function() pkg = json.decode(cmdParams) end) then
 					player.damage(pkg.val)
 					local x, y = (pkg.direction.x < 0 and -1 or 1)/math.sqrt(5), -2/math.sqrt(5)
-					local scale = 100
-					x, y = x*scale, y*scale
-					objects.player.body:applyLinearImpulse(x, y)
+					local scale = 150
+					objects.client.player.body:applyLinearImpulse(x*scale, y*scale)
 				end
 			elseif cmd == 'stateUpdate' then
 				local stateUpdate
 				if pcall(function() stateUpdate = json.decode(cmdParams) end) then
+					serverTime = math.max(serverTime, stateUpdate.time)
+					-- todo: handle server/client time better
 					stateUpdate.time = time
 					table.insert(client.states, stateUpdate)
 				end
@@ -65,15 +66,14 @@ function client.update(dt)
 				if pcall(function() add = json.decode(cmdParams) end) then
 					if add.players then
 						for k, v in pairs(add.players) do
-							local new = not client.currentState.players[k]
 							client.currentState.players[k] = {}
 							setPlayerVals(client.currentState.players[k], v)
-							if new then
-								objects.otherPlayers[k] = {
-									body = love.physics.newBody(physWorld, v.x, v.y, 'dynamic'),
+							if not objects.client.players[k] then
+								objects.client.players[k] = {
+									body = love.physics.newBody(clientWorld, v.x, v.y, 'dynamic'),
 									shape = love.physics.newRectangleShape(19, 33)
 								}
-								local opk = objects.otherPlayers[k]
+								local opk = objects.client.players[k]
 								opk.fixture = love.physics.newFixture(opk.body, opk.shape, 1)
 								opk.fixture:setUserData{type='otherPlayer', id=k}
 								opk.fixture:setFriction(0)
@@ -90,6 +90,23 @@ function client.update(dt)
 							end
 						end
 					end
+					if add.enemies then
+						for k, v in pairs(add.enemies) do
+							client.currentState.enemies[k] = {}
+							setEnemyVals(client.currentState.enemies[k], v)
+							if not objects.client.enemies[k] then
+								objects.client.enemies[k] = {}
+								local t = objects.client.enemies[k]
+								t.body = love.physics.newBody(clientWorld, v.x, v.y, 'dynamic')
+								t.shape = love.physics.newRectangleShape(16, 24)
+								t.fixture = love.physics.newFixture(t.body, t.shape, 1)
+								t.fixture:setUserData{type='clientEnemy', enemyType=v.type or 'none', table=t, id=k}
+								t.fixture:setFriction(0)
+								t.fixture:setMask(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
+								t.body:setGravityScale(0)
+							end
+						end
+					end
 				end
 			elseif cmd == 'remove' then
 				local remove
@@ -97,10 +114,21 @@ function client.update(dt)
 					if remove.players then
 						for k, _ in pairs(remove.players) do
 							client.currentState.players[k] = nil
-							if objects.otherPlayers[k] then
-								objects.otherPlayers[k].fixture:destroy()
-								objects.otherPlayers[k].body:destroy()
-								objects.otherPlayers[k] = nil
+							local opk = objects.client.players[k]
+							if opk then
+								opk.fixture:destroy()
+								opk.body:destroy()
+								objects.client.players[k] = nil
+							end
+						end
+					end
+					if remove.enemies then
+						for k, _ in pairs(remove.enemies) do
+							client.currentState.enemies[k] = nil
+							if objects.client.enemies[k] then
+								objects.client.enemies[k].fixture:destroy()
+								objects.client.enemies[k].body:destroy()
+								objects.client.enemies[k] = nil
 							end
 						end
 					end
@@ -126,19 +154,48 @@ function client.update(dt)
 				if p then
 					p.x = lerp(v.x, v2.x, t)
 					p.y = lerp(v.y, v2.y, t)
-					p.direction = v.direction
+					p.direction = v2.direction
 					p.anim = {
-						state = v.anim.state,
-						frame = v.anim.frame
+						state = v2.anim.state,
+						frame = v2.anim.frame
 					}
 					p.grapple = {
-						on = v.grapple.on, x = v.grapple.x, y = v.grapple.y
+						on = v2.grapple.on, x = v2.grapple.x, y = v2.grapple.y
 					}
-					p.holdingStaff = v.holdingStaff
+					p.holdingStaff = v2.holdingStaff
 				end
-				if objects.otherPlayers[k] then
-					objects.otherPlayers[k].body:setX(p.x)
-					objects.otherPlayers[k].body:setY(p.y)
+				local opk = objects.client.players[k]
+				if opk then
+					opk.body:setX(p.x)
+					opk.body:setY(p.y)
+					opk.body:setLinearVelocity(0, 0)
+				end
+			end
+		end
+		for k, v in pairs(client.states[client.stateIdx].enemies) do
+			local v2 = client.states[client.stateIdx+1].enemies[k]
+			if v2 then
+				local e = client.currentState.enemies[k]
+				if e then
+					e.type = v2.type
+					e.x = lerp(v.x, v2.x, t)
+					e.y = lerp(v.y, v2.y, t)
+					e.r = lerp(v.r, v2.r, t)
+					e.direction = v2.direction
+					e.hp = v2.hp
+					e.hpMax = v2.hpMax
+					e.lastHit = v2.lastHit
+					e.anim = {
+						state = v2.anim.state,
+						frame = v2.anim.frame
+					}
+				end
+				local opk = objects.client.enemies[k]
+				if opk then
+					opk.body:setX(e.x)
+					opk.body:setY(e.y)
+					opk.body:setAngle(e.r)
+					opk.body:setLinearVelocity(0, 0)
 				end
 			end
 		end
@@ -209,5 +266,27 @@ function client.drawPlayers()
 			love.graphics.print(k, v.x-math.floor(fonts.f12:getWidth(k)/2), v.y-35)
 			love.graphics.setShader()
 		end
+	end
+end
+
+function client.drawEnemies()
+	for k, v in pairs(client.currentState.enemies) do
+		love.graphics.setColor(255, 255, 255)
+		love.graphics.draw(gfx.enemies.dummy, v.x, v.y, v.r, 1, 1, 8, 12)
+		love.graphics.setColor(0, 0, 0, math.max(-((time - v.lastHit)*2 - 1)^2 + 1, 0)*255)
+		love.graphics.setFont(fonts.f18)
+		logger.logVal('time', time)
+		logger.logVal('serverTime', serverTime)
+		logger.logVal('enemy ' .. k .. ' lastHit', v.lastHit)
+		-- todo: ! still doesn't show on clients that connect later
+		love.graphics.print('!', math.floor(v.x - fonts.f18:getWidth('!')/2),
+							math.floor(v.y - 12 - fonts.f18:getHeight('!') - math.max(-((serverTime - v.lastHit)*2 - 1)^2 + 1, 0)*8))
+		love.graphics.setColor(255, 0, 0)
+		love.graphics.rectangle('fill', v.x - 8, v.y + 16, 16, 4)
+		love.graphics.setColor(0, 255, 0)
+		love.graphics.rectangle('fill', v.x - 8, v.y + 16 + 0.5, math.floor(16*v.hp/v.hpMax), 4)
+		love.graphics.setColor(0, 0, 0)
+		love.graphics.setLineWidth(1)
+		love.graphics.rectangle('line', v.x - 8, v.y + 16, 16, 4)
 	end
 end

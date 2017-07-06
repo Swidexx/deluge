@@ -23,7 +23,7 @@ function chat.keypressed(k, scancode, isrepeat)
 			local id = chat.message:sub(5, chat.message:len())
 			for k, v in pairs(client.currentState.players) do
 				if k == id then
-					objects.player.body:setPosition(v.x, v.y)
+					objects.client.player.body:setPosition(v.x, v.y)
 					break
 				end
 			end

@@ -47,6 +47,7 @@ end
 function love.update(dt)
 	love.window.setTitle("Deluge (" .. love.timer.getFPS() .. " FPS)")
 	time = time + dt
+	serverTime = serverTime + dt
 	if server.udp then
 		server.update(dt)
 	end
@@ -57,7 +58,6 @@ function love.update(dt)
 	if gamestate == 'playing' then
 		world.update(dt)
 		bullets.update(dt)
-		enemies.update(dt)
 		player.update(dt)
 		playerLight:setPosition(player.getX(), player.getY())
 		hud.update(dt)
@@ -75,8 +75,7 @@ function love.update(dt)
 
 	lighting.update(dt)
 
-	logger.logVal('#objects.bullets', #objects.bullets)
-	logger.logVal('chat.lastMessage', chat.lastMessage)
+	logger.logVal('#objects.client.bullets', #objects.client.bullets)
 
 	if music['steam']:isPlaying() then
 		music['steam']:setPitch(love.math.noise(time)+0.25)
@@ -129,7 +128,11 @@ function love.keypressed(k, scancode, isrepeat)
 	if logger.console.active then
 		logger.console.keypressed(k, scancode, isrepeat)
 	else
-		if gamestate == 'menu' then
+		if gamestate == 'splash' then
+			sfx['techemonic']:stop()
+			music['strategy']:play()
+			gamestate = 'menu'
+		elseif gamestate == 'menu' then
 			menu.keypressed(k, scancode, isrepeat)
 		elseif gamestate == 'playing' then
 			if not chat.typing then
@@ -167,7 +170,7 @@ function love.draw()
 		love.graphics.draw(gfx.enviro.background, 0, 0)
 		camera:set()
 		world.draw()
-		enemies.draw()
+		client.drawEnemies()
 		client.drawPlayers()
 		player.draw()
 		bullets.draw()
@@ -195,7 +198,7 @@ function love.quit()
 	end
 	if server.udp then
 		dg = string.format('%s %s %s', 'chatMsg', 'Server', 'closed')
-		for k, v in pairs(server.players) do
+		for k, v in pairs(objects.server.players) do
 			server.udp:sendto(dg, v.connection.ip, v.connection.port)
 		end
 	end

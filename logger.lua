@@ -33,6 +33,9 @@ function logger.console.keypressed(k, scancode, isrepeat)
 		logger.console.val = logger.console.lastVal
 	elseif k == 'down' then
 		logger.console.val = ''
+	elseif k == 'escape' then
+		logger.console.val = ''
+		logger.console.active = false
 	end
 end
 
@@ -47,19 +50,20 @@ function logger.console.submit()
 	logger.console.val = ''
 end
 
-function logger.drawColliders(e)
+function logger.drawColliders(e, color)
+	color = color or {0, 0, 200}
 	if logger.collidersEnabled then
 		e = e or objects
 		if e.shape then
 			love.graphics.setLineWidth(1)
 			if e.shape:getType() == 'polygon' then
 				local points = {e.body:getWorldPoints(e.shape:getPoints())}
-				love.graphics.setColor(0, 0, 200, 50)
+				love.graphics.setColor(color[1], color[2], color[3], 50)
 				love.graphics.polygon('fill', points)
 				love.graphics.setColor(0, 0, 0, 100)
 				love.graphics.polygon('line', points)
 			elseif e.shape:getType() == 'circle' then
-				love.graphics.setColor(0, 0, 200, 50)
+				love.graphics.setColor(color[1], color[2], color[3], 50)
 				love.graphics.circle('fill', e.body:getX(), e.body:getY(), e.shape:getRadius())
 				love.graphics.setColor(0, 0, 0, 100)
 				love.graphics.circle('line', e.body:getX(), e.body:getY(), e.shape:getRadius())
@@ -69,7 +73,7 @@ function logger.drawColliders(e)
 		else
 			for i, v in pairs(e) do
 				if type(v) == 'table' then
-					logger.drawColliders(v)
+					logger.drawColliders(v, color)
 				end
 			end
 		end
@@ -80,18 +84,18 @@ function logger.draw()
 	if logger.logsEnabled then
 		love.graphics.setFont(fonts.f10)
 		love.graphics.setShader(shaders.fontAlias)
-		love.graphics.setColor(0, 0, 0)
+		love.graphics.setColor(0, 96, 96)
 		local pos = 1
 		for i=math.max(#logger.logs-7, 1), #logger.logs do
 			local v = logger.logs[i]
-			love.graphics.print(v, gsx/2, pos*12)
+			love.graphics.print(v, 40, pos*12)
 			pos = pos + 1
 		end
-		love.graphics.setColor(0, 64, 0)
+		love.graphics.setColor(96, 96, 0)
 		pos = 1
 		for k, v in pairs(logger.logVals) do
 			if time - v.time < 6 then
-				love.graphics.print(k .. ': ' .. v.v, gsx/2, pos*12 + 100)
+				love.graphics.print(k .. ': ' .. v.v, 40, pos*12 + 100)
 				pos = pos + 1
 			else
 				logger.logVals[k] = nil

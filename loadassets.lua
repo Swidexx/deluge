@@ -4,6 +4,7 @@ ssy = love.graphics.getHeight()
 gsx = 480
 gsy = 270
 time = 0
+serverTime = 0
 
 love.filesystem.setIdentity(love.window.getTitle())
 math.randomseed(love.timer.getTime())
