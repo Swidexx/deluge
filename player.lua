@@ -1,7 +1,7 @@
 
 player = {
-	getX = function() return objects.player.body:getX() end,
-	getY = function() return objects.player.body:getY() end,
+	getX = function() return objects.client.player.body:getX() end,
+	getY = function() return objects.client.player.body:getY() end,
 	health = 4,
 	anim = {
 		state = 'jump',
@@ -12,7 +12,6 @@ player = {
 	direction = 1,
 	inAir = true,
 	inAirLast = true,
-	jumped = true,
 	walking = false,
 	lastEnemyJump = 0,
 	grapple = {
@@ -28,26 +27,25 @@ player = {
 
 function player.respawn()
 	player.health = 4
-	objects.player.body:setPosition(1260, 1000)
-	objects.playerSensorDown.body:setPosition(1260, 1017)
+	objects.client.player.body:setPosition(1260, 1000)
+	objects.client.playerSensorDown.body:setPosition(1260, 1017)
 end
 
 function player.update(dt)
-	local xv, yv = objects.player.body:getLinearVelocity()
+	local xv, yv = objects.client.player.body:getLinearVelocity()
 
-	--objects.player.body:setLinearVelocity(math.min(math.max(xv, -100), 100), yv)
 	if not player.inAir then
-		objects.player.body:applyForce(-8*xv, 0)
+		objects.client.player.body:applyForce(-8*xv, 0)
 	end
 
 	player.walking = false
-	if player.anim.state ~= 'attack' then
+	if player.anim.state ~= 'attack' and not chat.typing then
 		if love.keyboard.isDown('d') and xv < 100 then
-			objects.player.body:applyForce(1e3, 0)
+			objects.client.player.body:applyForce(1e3, 0)
 			player.anim.stopped = false
 		end
 		if love.keyboard.isDown('a') and xv > -100 then
-			objects.player.body:applyForce(-1e3, 0)
+			objects.client.player.body:applyForce(-1e3, 0)
 			player.anim.stopped = false
 		end
 		if love.keyboard.isDown('d') or love.keyboard.isDown('a') then
@@ -59,7 +57,7 @@ function player.update(dt)
 		player.direction = xv < 0 and -1 or 1
 	end
 
-	local jumpContacts = objects.playerSensorDown.body:getContactList()
+	local jumpContacts = objects.client.playerSensorDown.body:getContactList()
 	player.lastInAir = player.inAir
 	player.inAir = true
 	for _, v in pairs(jumpContacts) do
@@ -67,15 +65,22 @@ function player.update(dt)
 			local fixA, fixB = v:getFixtures()
 			local ud = fixB:getUserData()
 			if type(ud) == 'table' then
-				if not (ud.type == 'bullet' or ud.type == 'player' or ud.type == 'enemy') then
+				if not (ud.type == 'bullet' or ud.type == 'player' or ud.type == 'clientEnemy') then
 					player.inAir = false
 				end
-				if ud.type == 'enemy' then
+				if ud.type == 'clientEnemy' then
+					--[[
 					if time - player.lastEnemyJump > 0.1 then
 						player.lastEnemyJump = time
 						player.jump()
-						enemies.damage(ud.table, 4)
+						local dg = string.format('%s %s', 'damage', json.encode{
+							type='enemy', id=ud.id, val=2,
+							direction={x=ud.table.body:getX()-player.getX(), y=ud.table.body:getY()-player.getY()},
+							pos={x=player.getX(), y=player.getY()}
+						})
+						client.udp:send(dg)
 					end
+					]]
 				end
 			else
 				player.inAir = false
@@ -84,8 +89,7 @@ function player.update(dt)
 	end
 
 	if player.lastInAir and not player.inAir then
-		player.jumped = false
-		sfx.land:clone():play()
+		sfx['land']:clone():play()
 	end
 
 	if player.anim.state ~= 'jump' then
@@ -142,7 +146,7 @@ function player.update(dt)
 		player.anim.frameTime = math.min(player.anim.frameTime - 1, 1)
 		player.anim.frame = player.anim.nextFrame
 		if player.anim.state == 'walk' and (player.anim.frame == 9 or player.anim.frame == 16) then
-			sfx.step:clone():play()
+			sfx['step']:clone():play()
 		elseif player.anim.state == 'attack' and player.anim.frame == 8 then
 			player.attacked = true
 			player.anim.frame = 7
@@ -151,22 +155,26 @@ function player.update(dt)
 end
 
 function player.jump()
-	if objects.player.grappleJoint then
-		objects.player.grappleJoint:destroy()
-		objects.player.grappleJoint = nil
+	if objects.client.player.grappleJoint then
+		objects.client.player.grappleJoint:destroy()
+		objects.client.player.grappleJoint = nil
 	end
 	player.grapple.found = false
-	local xv, yv = objects.player.body:getLinearVelocity()
-	objects.player.body:setLinearVelocity(xv, -2.5e2)
-	player.jumped = true
-	sfx.jump:clone():play()
+	local xv, yv = objects.client.player.body:getLinearVelocity()
+	objects.client.player.body:setLinearVelocity(xv, -2.5e2)
+	sfx['jump']:clone():play()
 end
 
 function player.damage(d)
 	player.health = player.health - d
-	sfx.hitHurt:clone():play()
+	sfx['hitHurt']:clone():play()
 	if player.health <= 0 then
-		sfx.death:clone():play()
+		if objects.client.player.grappleJoint then
+			objects.client.player.grappleJoint:destroy()
+			objects.client.player.grappleJoint = nil
+		end
+		player.grapple.found = false
+		sfx['death']:clone():play()
 		player.respawn()
 	end
 end
@@ -177,8 +185,8 @@ function player.mousepressed(x, y, btn)
 	local a = math.atan2(x, -y)-math.pi/2
 	if btn == 1 then
 		if player.inventory.selected == 1 then
-			spawnBullet(player.getX(), player.getY(), a, 1.2e3)
-			sfx.laser:clone():play()
+			bullets.spawn(true, player.getX(), player.getY(), a, 1.2e3)
+			sfx['laser']:clone():play()
 		elseif player.inventory.selected == 2 then
 			player.anim.state = 'attack'
 			player.anim.frame = 1
@@ -186,19 +194,23 @@ function player.mousepressed(x, y, btn)
 		end
 		player.direction = x < 0 and -1 or 1
 	elseif btn == 2 then
+		if objects.client.player.grappleJoint then
+			objects.client.player.grappleJoint:destroy()
+			objects.client.player.grappleJoint = nil
+		end
 		player.grapple.found = false
-		physWorld:rayCast(player.getX(), player.getY(), player.getX() + math.cos(a)*150,
+		clientWorld:rayCast(player.getX(), player.getY(), player.getX() + math.cos(a)*150,
 							player.getY() + math.sin(a)*150, grappleCallback)
 		if player.grapple.found then
-			if objects.player.grappleJoint then
-				objects.player.grappleJoint:destroy()
-				objects.player.grappleJoint = nil
+			if objects.client.player.grappleJoint then
+				objects.client.player.grappleJoint:destroy()
+				objects.client.player.grappleJoint = nil
 			end
-			objects.player.grappleJoint = love.physics.newRopeJoint(objects.player.body,
+			objects.client.player.grappleJoint = love.physics.newRopeJoint(objects.client.player.body,
 					player.grapple.fixture:getBody(), player.getX(), player.getY(),
 					player.grapple.x, player.grapple.y,
 					math.sqrt((player.getX()-player.grapple.x)^2+(player.getY()-player.grapple.y)^2), true)
-			sfx.select:clone():play()
+			sfx['select']:clone():play()
 		end
 	end
 end
@@ -222,21 +234,19 @@ function grappleCallback(fixture, x, y, xn, yn, fraction)
 end
 
 function player.keypressed(k, scancode, isrepeat)
-	local xv, yv = objects.player.body:getLinearVelocity()
-	if k == 'space' then
-		if player.inAir and objects.player.grappleJoint then
-			objects.player.grappleJoint:destroy()
-			objects.player.grappleJoint = nil
-			player.jump()
-		elseif not player.jumped then
-			player.jump()
+	local xv, yv = objects.client.player.body:getLinearVelocity()
+	if not isrepeat then
+		if k == 'space' then
+			if objects.client.player.grappleJoint or not player.inAir then
+				player.jump()
+			end
+		elseif k == '1' then
+			player.inventory.selected = 1
+		elseif k == '2' then
+			player.inventory.selected = 2
+		elseif k == '3' then
+			player.inventory.selected = 3
 		end
-	elseif k == '1' then
-		player.inventory.selected = 1
-	elseif k == '2' then
-		player.inventory.selected = 2
-	elseif k == '3' then
-		player.inventory.selected = 3
 	end
 end
 
@@ -278,4 +288,9 @@ function player.draw()
 		love.graphics.setColor(0, 0, 0)
 		love.graphics.circle('line', player.grapple.x, player.grapple.y, 3)
 	end
+	love.graphics.setShader(shaders.fontAlias)
+	love.graphics.setColor(0, 0, 0)
+	love.graphics.setFont(fonts.f12)
+	love.graphics.print(player.id or 'Player', player.getX()-math.floor(fonts.f12:getWidth(player.id or 'Player')/2), player.getY()-35)
+	love.graphics.setShader()
 end
