@@ -89,18 +89,15 @@ function love.mousepressed(x, y, btn, isTouch)
 		sfx['techemonic']:stop()
 		music['strategy']:play()
 		gamestate = 'menu'
-	elseif gamestate == 'menu' then
-		menu.mousepressed(x, y, btn)
 	elseif gamestate == 'playing' then
 		player.mousepressed(x, y, btn)
 		lighting.mousepressed(x, y, btn)
 	end
+	menu.mousepressed(x, y, btn)
 end
 
 function love.mousereleased(x, y, btn, isTouch)
-	if gamestate == 'menu' then
-		menu.mousereleased(x, y, btn)
-	end
+	menu.mousereleased(x, y, btn)
 end
 
 function love.wheelmoved(x, y)
@@ -139,9 +136,16 @@ function love.keypressed(k, scancode, isrepeat)
 				player.keypressed(k, scancode, isrepeat)
 				lighting.keypressed(k, scancode, isrepeat)
 				if k == 'escape' then
+					--[[
 					gamestate = 'menu'
 					music['rhymull']:stop()
 					music['strategy']:play()
+					]]
+					if menu.overlay.isOpen then
+						menu.overlay.close()
+					else
+						menu.overlay.open()
+					end
 				end
 			end
 			chat.keypressed(k, scancode, isrepeat)
@@ -184,6 +188,7 @@ function love.draw()
 		lighting.draw()
 		hud.draw()
 		chat.draw()
+		menu.draw()
 	end
 	logger.draw()
 	love.graphics.setCanvas()

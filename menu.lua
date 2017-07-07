@@ -1,7 +1,8 @@
 
 menu = {
 	state = 'main',
-	btns = {}
+	btns = {},
+	overlay = {time=0}
 }
 
 function setSFXVolume(n)
@@ -22,6 +23,16 @@ function menu.saveDefaults()
 	local str = "vals={name='" .. menu.nameInput.val .. "',ip='" .. menu.ipInput.val .. "',volume={main=" ..
 		menu.mainVolume.val .. ",sfx=" .. menu.sfxVolume.val .. ",music=" .. menu.musicVolume.val .. "}}\nreturn vals"
 	love.filesystem.write('menuDefaults.lua', str)
+end
+
+function menu.overlay.open()
+	menu.overlay.isOpen = true
+	menu.overlay.time = time
+end
+
+function menu.overlay.close()
+	menu.overlay.isOpen = false
+	menu.overlay.time = time
 end
 
 function menu.addButton(t)
@@ -86,74 +97,80 @@ menu.addButton{state='options', img=gfx.menu.opensavedir, id='opensavedir', y=19
 menu.addButton{state='options', img=gfx.menu.back, id='back', y=230}
 
 function menu.mousepressed(x, y, btn)
-	menu.textInputSelected = nil
 	local mx, my = screen2game(love.mouse.getPosition())
-	for i, v in pairs(menu.btns[menu.state]) do
-		if v.type == 'slider' then
-			if mx > v.x+v.img:getWidth()/2-v.width/2 and mx < v.x+v.img:getWidth()/2+v.width/2 and my > v.y and my < v.y+v.img:getHeight() then
-				menu.sliderHeld = v
-				break
-			end
-		elseif v.type == 'textinput' then
-			if mx > v.x-v.width/2 and mx < v.x+v.width/2 and my > v.y-2 and my < v.y+v.font:getHeight()+4 then
-				menu.textInputSelected = v
-			end
-		else
-			if v.img then
-				if mx > v.x and mx < v.x+v.img:getWidth() and my > v.y and my < v.y+v.img:getHeight() then
-					if v.id == 'play' then
-						menu.state = 'play'
-						sfx['select']:clone():play()
-					elseif v.id == 'options' then
-						menu.state = 'options'
-						sfx['select']:clone():play()
-					elseif v.id == 'exit' then
-						love.event.quit()
-						sfx['select']:clone():play()
-					elseif v.id == 'back' then
-						menu.state = 'main'
-						menu.saveDefaults()
-						sfx['select']:clone():play()
-					elseif v.id == 'fullscreen' then
-						love.window.setFullscreen(not love.window.getFullscreen())
-						v.val = 1-v.val
-						sfx['select']:clone():play()
-					elseif v.id == 'windowsize' and not love.window.getFullscreen() then
-						v.val = (v.val+1)%v.numvals
-						_, _, flags = love.window.getMode()
-						local w, h = gsx*(v.val+1), gsy*(v.val+1)
-						love.window.setMode(w, h, flags)
-						love.resize(w, h)
-						sendShaderDefaults()
-						sfx['select']:clone():play()
-					elseif v.id == 'opensavedir' then
-						love.system.openURL("file://" .. love.filesystem.getSaveDirectory())
-						sfx['select']:clone():play()
-					end
+	if gamestate == 'menu' then
+		menu.textInputSelected = nil
+		for i, v in pairs(menu.btns[menu.state]) do
+			if v.type == 'slider' then
+				if mx > v.x+v.img:getWidth()/2-v.width/2 and mx < v.x+v.img:getWidth()/2+v.width/2 and my > v.y and my < v.y+v.img:getHeight() then
+					menu.sliderHeld = v
 					break
 				end
-			elseif v.text then
-				if mx > v.x and mx < v.x+v.font:getWidth(v.text) and my > v.y and my < v.y+v.font:getHeight(v.text) then
-					if v.id == 'host' then
-						gamestate = 'playing'
-						local ip, port = menu.ipInput.val:match('(.-):(.*)')
-						server.start(port or '1357')
-						client.connect('127.0.0.1', port or '1357')
-						world.generate()
-						music['strategy']:stop()
-						music['rhymull']:play()
-						sfx['select']:clone():play()
-					elseif v.id == 'connect' then
-						gamestate = 'playing'
-						local ip, port = menu.ipInput.val:match('(.-):(.*)')
-						client.connect(ip, port or '1357')
-						world.generate()
-						music['strategy']:stop()
-						music['rhymull']:play()
-						sfx['select']:clone():play()
+			elseif v.type == 'textinput' then
+				if mx > v.x-v.width/2 and mx < v.x+v.width/2 and my > v.y-2 and my < v.y+v.font:getHeight()+4 then
+					menu.textInputSelected = v
+				end
+			else
+				if v.img then
+					if mx > v.x and mx < v.x+v.img:getWidth() and my > v.y and my < v.y+v.img:getHeight() then
+						if v.id == 'play' then
+							menu.state = 'play'
+							sfx['select']:clone():play()
+						elseif v.id == 'options' then
+							menu.state = 'options'
+							sfx['select']:clone():play()
+						elseif v.id == 'exit' then
+							love.event.quit()
+							sfx['select']:clone():play()
+						elseif v.id == 'back' then
+							menu.state = 'main'
+							menu.saveDefaults()
+							sfx['select']:clone():play()
+						elseif v.id == 'fullscreen' then
+							love.window.setFullscreen(not love.window.getFullscreen())
+							v.val = 1-v.val
+							sfx['select']:clone():play()
+						elseif v.id == 'windowsize' and not love.window.getFullscreen() then
+							v.val = (v.val+1)%v.numvals
+							_, _, flags = love.window.getMode()
+							local w, h = gsx*(v.val+1), gsy*(v.val+1)
+							love.window.setMode(w, h, flags)
+							love.resize(w, h)
+							sendShaderDefaults()
+							sfx['select']:clone():play()
+						elseif v.id == 'opensavedir' then
+							love.system.openURL("file://" .. love.filesystem.getSaveDirectory())
+							sfx['select']:clone():play()
+						end
+						break
+					end
+				elseif v.text then
+					if mx > v.x and mx < v.x+v.font:getWidth(v.text) and my > v.y and my < v.y+v.font:getHeight(v.text) then
+						if v.id == 'host' then
+							gamestate = 'playing'
+							local ip, port = menu.ipInput.val:match('(.-):(.*)')
+							server.start(port or '1357')
+							client.connect('127.0.0.1', port or '1357')
+							world.generate()
+							music['strategy']:stop()
+							music['rhymull']:play()
+							sfx['select']:clone():play()
+						elseif v.id == 'connect' then
+							gamestate = 'playing'
+							local ip, port = menu.ipInput.val:match('(.-):(.*)')
+							client.connect(ip, port or '1357')
+							world.generate()
+							music['strategy']:stop()
+							music['rhymull']:play()
+							sfx['select']:clone():play()
+						end
 					end
 				end
 			end
+		end
+	elseif menu.overlay.isOpen and time - menu.overlay.time > 1/6 then
+		if mx > gsx/6 and mx < gsx/6 + gsx*2/3 and my > 0 and my < gsy*3/4 then
+			menu.overlay.close()
 		end
 	end
 end
@@ -207,71 +224,79 @@ end
 
 function menu.draw()
 	local mx, my = screen2game(love.mouse.getPosition())
-	if menu.sliderHeld then
-		local v = menu.sliderHeld
-		if v.id == 'volume' then
-			v.val = math.min(math.max((mx-(v.x+v.img:getWidth()/2-v.width/2))/(v.width-3), 0), 1)
-			love.audio.setVolume(v.val)
-		elseif v.id == 'sfx' then
-			v.val = math.min(math.max((mx-(v.x+v.img:getWidth()/2-v.width/2))/(v.width-3), 0), 1)
-			setSFXVolume(v.val)
-		elseif v.id == 'music' then
-			v.val = math.min(math.max((mx-(v.x+v.img:getWidth()/2-v.width/2))/(v.width-3), 0), 1)
-			setMusicVolume(v.val)
-		end
-	end
-	love.graphics.setShader(shaders.menubg)
-	love.graphics.setColor(255, 255, 255)
-	love.graphics.rectangle('fill', 0, 0, gsx, gsy)
-	love.graphics.setShader()
-	for i, v in pairs(menu.btns[menu.state]) do
-		if ((v.type ~= 'static' and v.type ~= 'slider') and v.img and mx > v.x and mx < v.x+v.img:getWidth() or
-		v.type == 'slider' and mx > v.x+v.img:getWidth()/2-v.width/2 and mx < v.x+v.img:getWidth()/2+v.width/2) and my > v.y and my < v.y+v.img:getHeight() then
-			love.graphics.setColor(255, 255, 255, 200)
-		else
-			love.graphics.setColor(255, 255, 255)
-		end
-		if v.id == 'windowsize' and love.window.getFullscreen() then
-			love.graphics.setColor(255, 255, 255, 100)
-		end
-		if v.img then
-			love.graphics.draw(v.img, v.x, v.y)
-		elseif v.text then
-			love.graphics.setFont(v.font)
-			love.graphics.setShader(shaders.fontAlias)
-			if mx > v.x and mx < v.x+v.font:getWidth(v.text) and my > v.y and my < v.y+v.font:getHeight(v.text) then
-				love.graphics.setColor(91, 78, 37, 200)
-			else
-				love.graphics.setColor(91, 78, 37)
+	if gamestate == 'menu' then
+		if menu.sliderHeld then
+			local v = menu.sliderHeld
+			if v.id == 'volume' then
+				v.val = math.min(math.max((mx-(v.x+v.img:getWidth()/2-v.width/2))/(v.width-3), 0), 1)
+				love.audio.setVolume(v.val)
+			elseif v.id == 'sfx' then
+				v.val = math.min(math.max((mx-(v.x+v.img:getWidth()/2-v.width/2))/(v.width-3), 0), 1)
+				setSFXVolume(v.val)
+			elseif v.id == 'music' then
+				v.val = math.min(math.max((mx-(v.x+v.img:getWidth()/2-v.width/2))/(v.width-3), 0), 1)
+				setMusicVolume(v.val)
 			end
-			love.graphics.print(v.text, v.x, v.y)
-			love.graphics.setShader()
 		end
-		if v.type == 'switch' and v.val ~= 0 then
-			love.graphics.setColor(0, 0, 0, 32)
-			love.graphics.rectangle('fill', v.x, v.y, v.img:getWidth(), v.img:getHeight())
-		elseif v.type == 'slider' then
-			love.graphics.setColor(0, 0, 0, 64)
-			love.graphics.setLineWidth(1)
-			love.graphics.rectangle('line', math.floor(v.x+v.img:getWidth()/2-v.width/2), v.y-1, v.width, v.img:getHeight()+2)
-			love.graphics.setColor(0, 0, 0, 32)
-			love.graphics.rectangle('fill', math.floor(v.x+v.img:getWidth()/2-v.width/2+1), v.y, (v.width-3)*v.val, v.img:getHeight()-1)
-		elseif v.type == 'cycle' then
-			love.graphics.setColor(0, 0, 0, 32)
-			love.graphics.rectangle('fill', v.x, v.y+4, v.img:getWidth()*(v.val+1)/v.numvals, v.img:getHeight()-8)
-		elseif v.type == 'textinput' then
-			love.graphics.setColor(0, 0, 0, 32)
-			love.graphics.rectangle('fill', math.floor(v.x-v.width/2), v.y-2, v.width, v.font:getHeight()+4)
-			if mx > v.x-v.width/2 and mx < v.x+v.width/2 and my > v.y-2 and my < v.y+v.font:getHeight()+4 then
-				love.graphics.setColor(91, 78, 37, 200)
+		love.graphics.setShader(shaders.menubg)
+		love.graphics.setColor(255, 255, 255)
+		love.graphics.rectangle('fill', 0, 0, gsx, gsy)
+		love.graphics.setShader()
+		for i, v in pairs(menu.btns[menu.state]) do
+			if ((v.type ~= 'static' and v.type ~= 'slider') and v.img and mx > v.x and mx < v.x+v.img:getWidth() or
+			v.type == 'slider' and mx > v.x+v.img:getWidth()/2-v.width/2 and mx < v.x+v.img:getWidth()/2+v.width/2) and my > v.y and my < v.y+v.img:getHeight() then
+				love.graphics.setColor(255, 255, 255, 200)
 			else
-				love.graphics.setColor(91, 78, 37)
+				love.graphics.setColor(255, 255, 255)
 			end
-			love.graphics.setFont(v.font)
-			love.graphics.setShader(shaders.fontAlias)
-			local txt = menu.textInputSelected and menu.textInputSelected == v and time%1 > 0.5 and v.val .. '|' or v.val
-			love.graphics.print(txt, math.floor(v.x-v.font:getWidth(txt)/2), v.y)
-			love.graphics.setShader()
+			if v.id == 'windowsize' and love.window.getFullscreen() then
+				love.graphics.setColor(255, 255, 255, 100)
+			end
+			if v.img then
+				love.graphics.draw(v.img, v.x, v.y)
+			elseif v.text then
+				love.graphics.setFont(v.font)
+				love.graphics.setShader(shaders.fontAlias)
+				if mx > v.x and mx < v.x+v.font:getWidth(v.text) and my > v.y and my < v.y+v.font:getHeight(v.text) then
+					love.graphics.setColor(91, 78, 37, 200)
+				else
+					love.graphics.setColor(91, 78, 37)
+				end
+				love.graphics.print(v.text, v.x, v.y)
+				love.graphics.setShader()
+			end
+			if v.type == 'switch' and v.val ~= 0 then
+				love.graphics.setColor(0, 0, 0, 32)
+				love.graphics.rectangle('fill', v.x, v.y, v.img:getWidth(), v.img:getHeight())
+			elseif v.type == 'slider' then
+				love.graphics.setColor(0, 0, 0, 64)
+				love.graphics.setLineWidth(1)
+				love.graphics.rectangle('line', math.floor(v.x+v.img:getWidth()/2-v.width/2), v.y-1, v.width, v.img:getHeight()+2)
+				love.graphics.setColor(0, 0, 0, 32)
+				love.graphics.rectangle('fill', math.floor(v.x+v.img:getWidth()/2-v.width/2+1), v.y, (v.width-3)*v.val, v.img:getHeight()-1)
+			elseif v.type == 'cycle' then
+				love.graphics.setColor(0, 0, 0, 32)
+				love.graphics.rectangle('fill', v.x, v.y+4, v.img:getWidth()*(v.val+1)/v.numvals, v.img:getHeight()-8)
+			elseif v.type == 'textinput' then
+				love.graphics.setColor(0, 0, 0, 32)
+				love.graphics.rectangle('fill', math.floor(v.x-v.width/2), v.y-2, v.width, v.font:getHeight()+4)
+				if mx > v.x-v.width/2 and mx < v.x+v.width/2 and my > v.y-2 and my < v.y+v.font:getHeight()+4 then
+					love.graphics.setColor(91, 78, 37, 200)
+				else
+					love.graphics.setColor(91, 78, 37)
+				end
+				love.graphics.setFont(v.font)
+				love.graphics.setShader(shaders.fontAlias)
+				local txt = menu.textInputSelected and menu.textInputSelected == v and time%1 > 0.5 and v.val .. '|' or v.val
+				love.graphics.print(txt, math.floor(v.x-v.font:getWidth(txt)/2), v.y)
+				love.graphics.setShader()
+			end
 		end
+	elseif menu.overlay.isOpen then
+		love.graphics.setColor(255, 255, 255, 100)
+		love.graphics.rectangle('fill', gsx/6, -(gsy*3/4)+(gsy*3/4)*ease.outQuart(math.min((time - menu.overlay.time)*6, 1)), gsx*2/3, gsy*3/4)
+	elseif time - menu.overlay.time < 1/6 then
+		love.graphics.setColor(255, 255, 255, 100)
+		love.graphics.rectangle('fill', gsx/6, -gsy*3/4*ease.inQuart(math.min((time - menu.overlay.time)*6, 1)), gsx*2/3, gsy*3/4)
 	end
 end
